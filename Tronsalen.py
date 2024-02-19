@@ -17,6 +17,10 @@ frequency = np.linspace(0, sr, len(magnitude))
 # Inverse Fourier Transform
 reconstructed_signal = np.fft.ifft(fft).real
 
+# Save the audio
+output_file = 'reconstructed_audio.wav'
+wavfile.write(output_file, sr, reconstructed_signal.astype(np.float32))
+
 # Plot the original audio, Fourier Transform, and reconstructed audio signals
 plt.figure(figsize=(14, 10))
 
@@ -43,3 +47,18 @@ plt.ylabel('Amplitude')
 
 plt.tight_layout()
 plt.show()
+
+file1_path = audio_file
+file2_path = output_file
+
+def compare_audio(file1_path, file2_path):
+
+    is_same = open(“file1_path”, "rb").read() == open(“file2_path”, "rb").read()
+    if is_same:
+        print('Same')
+    else:
+        print('Different')
+
+
+
+print(message)
