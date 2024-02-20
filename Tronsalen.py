@@ -1,64 +1,79 @@
-# You are all peasents
 
+# Source for the code https://www.kaggle.com/robikscube/working-with-audio-in-python
+
+import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib.pylab as plt
+import seaborn as sns
+
+from glob import glob
+
 import librosa
-from scipy.io import wavfile
+import librosa.display
+import IPython.display as ipd
 
-# Load the audio file
-audio_file = 'GI_GMF_B3_353_20140520_n.wav'
-y, sr = librosa.load(audio_file)
+from itertools import cycle
 
-# Compute the Fourier Transform
-fft = np.fft.fft(y)
-magnitude = np.abs(fft)
-frequency = np.linspace(0, sr, len(magnitude))
+sns.set_theme(style="white", palette=None)
+color_pal = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+color_cycle = cycle(plt.rcParams["axes.prop_cycle"].by_key()["color"])
 
-# Inverse Fourier Transform
-reconstructed_signal = np.fft.ifft(fft).real
+audio_files = ['reconstructed_audio.wav']
 
-# Save the audio
-output_file = 'reconstructed_audio.wav'
-wavfile.write(output_file, sr, reconstructed_signal.astype(np.float32))
+y, sr = librosa.load(audio_files[0])
+print(f'y: {y[:10]}')
+print(f'shape y: {y.shape}')
+print(f'sr: {sr}')
 
-# Plot the original audio, Fourier Transform, and reconstructed audio signals
-plt.figure(figsize=(14, 10))
-
-# Original Audio
-plt.subplot(3, 1, 1)
-plt.plot(np.arange(len(y)) / sr, y)
-plt.title('Original Audio Signal')
-plt.xlabel('Time (s)')
-plt.ylabel('Amplitude')
-
-# Fourier Transform
-plt.subplot(3, 1, 2)
-plt.plot(frequency, magnitude)
-plt.title('Fourier Transform')
-plt.xlabel('Frequency (Hz)')
-plt.ylabel('Magnitude')
-
-# Reconstructed Audio
-plt.subplot(3, 1, 3)
-plt.plot(np.arange(len(reconstructed_signal)) / sr, reconstructed_signal)
-plt.title('Reconstructed Audio Signal')
-plt.xlabel('Time (s)')
-plt.ylabel('Amplitude')
-
-plt.tight_layout()
+# Raw Audio example
+pd.Series(y).plot(figsize=(10, 5),
+                  lw=1,
+                  title='Raw Audio Example',
+                 color=color_pal[0])
 plt.show()
 
-file1_path = audio_file
-file2_path = output_file
+# Raw Audio Trimmed Example
+y_trimmed, _ = librosa.effects.trim(y, top_db=20)
+pd.Series(y_trimmed).plot(figsize=(10, 5),
+                  lw=1,
+                  title='Raw Audio Trimmed Example',
+                 color=color_pal[1])
+plt.show()
 
-def compare_audio(file1_path, file2_path):
+# Raw Audio Zoomed In Example
+pd.Series(y[30000:30500]).plot(figsize=(10, 5),
+                  lw=1,
+                  title='Raw Audio Zoomed In Example',
+                 color=color_pal[2])
+plt.show()
 
-    is_same = open(“file1_path”, "rb").read() == open(“file2_path”, "rb").read()
-    if is_same:
-        print('Same')
-    else:
-        print('Different')
+# Spectogram
+D = librosa.stft(y)
+S_db = librosa.amplitude_to_db(np.abs(D), ref=np.max)
+S_db.shape
+
+fig, ax = plt.subplots(figsize=(10, 5))
+img = librosa.display.specshow(S_db,
+                              x_axis='time',
+                              y_axis='log',
+                              ax=ax)
+ax.set_title('Spectogram Example', fontsize=20)
+fig.colorbar(img, ax=ax, format=f'%0.2f')
+plt.show()
+
+# Mel Spectogram
+S = librosa.feature.melspectrogram(y=y,
+                                   sr=sr,
+                                   n_mels=128 * 2,)
+S_db_mel = librosa.amplitude_to_db(S, ref=np.max)
+
+fig, ax = plt.subplots(figsize=(10, 5))
+img = librosa.display.specshow(S_db_mel,
+                              x_axis='time',
+                              y_axis='log',
+                              ax=ax)
+ax.set_title('Mel Spectogram Example', fontsize=20)
+fig.colorbar(img, ax=ax, format=f'%0.2f')
+plt.show()
 
 
-
-print(message)
