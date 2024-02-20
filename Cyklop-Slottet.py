@@ -1,33 +1,43 @@
-from __future__ import print_function
-import math
-import matplotlib.pyplot as plt
-from scipy.io import wavfile as wav
-from scipy.fftpack import fft
 import numpy as np
-from pydub import AudioSegment
-from pydub.playback import play
-from scipy.io import wavfile # get the api
-import scipy
+import matplotlib.pyplot as plt
+import librosa
+from scipy.io import wavfile
 
-sound = AudioSegment.from_wav("GI_GMF_B3_353_20140520_n.wav")
-play(sound)
+# Load the audio file
+audio_file = 'output_audio.wav'
+y, sr = librosa.load(audio_file)
 
-# Extract raw audio data as numpy array
-raw_data = sound.get_array_of_samples()
-
-# Perform Fourier transform
-transformed_data = np.fft.fft(raw_data)
-
-# Play the transformed sound (inverse Fourier transform)
-# Inverse transform to get back to the time domain
-transformed_sound = AudioSegment(data=np.fft.ifft(transformed_data).real.astype(np.int16), sample_width=2, frame_rate=sound.frame_rate, channels=1)
-
-# Play the transformed sound
-play(transformed_sound)
-# If you want to visualize the Fourier transform
-plt.plot(np.abs(transformed_data))
-plt.title('Fourier Transform')
-plt.xlabel('Frequency')
-plt.ylabel('Amplitude')
+# Plot the waveform
+plt.figure(figsize=(5, 5))  # Set figsize to create a square image
+plt.plot(np.linspace(0, len(y) / sr, num=len(y)), y)
+plt.xlabel("Time (s)")
+plt.ylabel("Amplitude")
+plt.title("Waveform of Audio")
+plt.tight_layout()
 plt.show()
 
+# Compute the Fourier Transform
+fft = np.fft.fft(y)
+magnitude = np.abs(fft)
+frequency = np.linspace(0, sr, len(magnitude))
+
+plt.figure(figsize=(5, 5))
+plt.plot(frequency[:len(frequency)//2], magnitude[:len(magnitude)//2])
+plt.xlabel("Frequency (Hz)")
+plt.ylabel("Magnitude")
+plt.title("Fourier Transform of Audio")
+plt.show()
+
+# Show the audio waveform of the Fourier transformed sound clip
+y_ifft = np.fft.ifft(fft)  # Inverse Fourier Transform
+plt.figure(figsize=(5, 5))
+plt.plot(np.linspace(0, len(y_ifft) / sr, num=len(y_ifft)), np.real(y_ifft))  # Take real part after inverse transform
+plt.xlabel("Time (s)")
+plt.ylabel("Amplitude")
+plt.title("Waveform of Inverse Fourier Transformed Audio")
+plt.tight_layout()
+plt.show()
+
+# Save the audio as a new file
+output_file = 'transformed_audio.wav'
+wavfile.write(output_file, sr, np.real(y_ifft).astype(np.float32))
