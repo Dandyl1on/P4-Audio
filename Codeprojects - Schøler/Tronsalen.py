@@ -47,7 +47,7 @@ pd.Series(y[30000:30500]).plot(figsize=(10, 5),
                  color=color_pal[2])
 plt.show()
 
-# Spectogram
+# # Spectogram
 D = librosa.stft(y)
 S_db = librosa.amplitude_to_db(np.abs(D), ref=np.max)
 S_db.shape
