@@ -1,49 +1,46 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import librosa
 from scipy.io import wavfile
-import pygame
 
-blue_image = pygame.image.load('image.png')
+def plot_spectrum(wav_file, output_wav_file):
+    # Read the WAV file
+    sample_rate, data = wavfile.read(wav_file)
 
-# Downsample the image
-downsample_factor = 4
-blue_image = pygame.transform.scale(blue_image, (blue_image.get_width() // downsample_factor,
-                                                 blue_image.get_height() // downsample_factor))
+    # Compute the Fourier Transform
+    fourier_transform = np.fft.fft(data)
 
-# Extract dimensions
-width, height = blue_image.get_size()
+    # Modify one value in the amplitude slightly
+    index_to_modify = 1000  # Modify the value at this index
+    modification_amount = 1000  # Change the amplitude by this factor
+    fourier_transform[index_to_modify] *= modification_amount
 
-# Initialize Pygame mixer
-pygame.mixer.init()
+    # Compute the frequencies corresponding to the Fourier Transform
+    frequencies = np.fft.fftfreq(len(data)) * sample_rate
 
-# Set sound parameters
-sample_rate = 44100
-duration = 1.5  # in seconds
-volume = 0.5  # 0.0 to 1.0
+    # Plot the spectrum in Cartesian coordinates
+    plt.figure(figsize=(10, 4))
+    plt.subplot(1, 2, 1)
+    plt.plot(frequencies, np.abs(fourier_transform))
+    plt.xlabel('Frequency (Hz)')
+    plt.ylabel('Magnitude')
+    plt.title('Frequency Spectrum')
+    plt.grid(True)
 
-# Initialize sound array
-sound_data = np.zeros((int(sample_rate * duration), 2), dtype=np.float32)
+    # Plot the spectrum in polar coordinates
+    plt.subplot(1, 2, 2, polar=True)
+    plt.plot(np.angle(fourier_transform), np.abs(fourier_transform))
+    plt.title('Polar Spectrum')
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
 
-# Convert image to sound
-blue_intensity = np.mean(pygame.surfarray.array3d(blue_image)[:, :, 2])
-frequency = 6 + (blue_intensity * 10000)  # Adjust this range as needed
-phase = 0
-for t in range(int(sample_rate * duration)):
-    sound_data[t, 0] = volume * np.sin(2 * np.pi * frequency * t / sample_rate + phase)
-    sound_data[t, 1] = volume * np.sin(2 * np.pi * frequency * t / sample_rate + phase)
+    # Save transformed audio
+    transformed_audio = np.fft.ifft(fourier_transform).real.astype(np.int16)
+    wavfile.write(output_wav_file, sample_rate, transformed_audio)
+    print(f"Transformed audio saved as {output_wav_file}")
 
-# Normalize sound data
-max_value = np.max(np.abs(sound_data))
-sound_data /= max_value
-
-# Convert to bytes
-sound_bytes = (sound_data * 32767).astype(np.int16).tobytes()
-
-# Play the sound
-print("Playing Sound")
-pygame.mixer.Sound(sound_bytes).play()
-
-# Wait for the sound to finish
-pygame.time.wait(int(duration * 1000))
-print("Finished Playing Sound")
+if __name__ == "__main__":
+    # Provide the path to your WAV file
+    wav_file = "GI_GMF_B3_353_20140520_n.wav"
+    output_wav_file = "FourierTransformed.wav"
+    plot_spectrum(wav_file, output_wav_file)
