@@ -8,6 +8,8 @@ from scipy.signal import find_peaks
 audio_file = 'GI_GMF_B3_353_20140520_n.wav'
 y, sr = librosa.load(audio_file)
 
+# TASK 1: Evaluate and represent the Fourier Transform of the input audio signal.
+
 # Compute the Fourier Transform
 fft = np.fft.fft(y)
 magnitude = np.abs(fft)
@@ -102,7 +104,6 @@ plt.legend()
 plt.tight_layout()
 plt.show()
 
-
 # Spectral Shape Measures
 centroid = np.sum(positive_frequencies * magnitude) / np.sum(magnitude)
 bandwidth = np.sum(magnitude * (positive_frequencies - centroid)**2) / np.sum(magnitude)
@@ -167,3 +168,27 @@ plt.show()
 	# The majority of the signal's energy (35k) is concentrated in the 0-1000 Hz range, indicating significant presence of low-frequency components, suggesting fundamental frequencies of musical tones.
 	# In the range of 1-2 kHz, there is a lower energy level (100) indicating a reduction in signal strength compared to the lower frequency range. The drop in energy might signify a less pronounced contribution from mid-frequency components.
 	# These findings align with the observations made during the Fourier Transform analysis, where dominant frequency components were identified at lower frequencies (0-250 Hz, 500 Hz, and 1 kHz). The reduced energy in the 1000-2000 Hz range may correspond to a decrease in the amplitude of these mid-frequency components.
+
+# TASK 2: Evaluate and represent the Polar Coordinates of the Fourier Transform of the input audio signal.
+
+# Compute the polar coordinates
+polar_coordinates = np.angle(fft)
+
+# Plot the polar coordinates using a polar plot
+plt.figure(figsize=(10, 4))
+plt.polar(polar_coordinates, np.abs(fft))
+plt.title('Polar Coordinates of Fourier Transform')
+plt.tight_layout()
+plt.show()
+
+# Inverse Fourier Transform
+reconstructed_signal = np.fft.ifft(fft).real
+
+# Plot the Reconstructed Audio Signal
+plt.figure(figsize=(10, 4))
+plt.plot(np.arange(len(reconstructed_signal)) / sr, reconstructed_signal)
+plt.title('Reconstructed Audio Signal')
+plt.xlabel('Time (s)')
+plt.ylabel('Amplitude')
+plt.tight_layout()
+plt.show()
