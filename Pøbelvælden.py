@@ -8,6 +8,8 @@ from scipy.signal import find_peaks
 audio_file = 'GI_GMF_B3_353_20140520_n.wav'
 y, sr = librosa.load(audio_file)
 
+print(sr)
+
 # TASK 1: Evaluate and represent the Fourier Transform of the input audio signal.
 
 # Compute the Fourier Transform
@@ -15,9 +17,8 @@ fft = np.fft.fft(y)
 magnitude = np.abs(fft)
 frequency = np.fft.fftfreq(len(magnitude), 1/sr)  # Updated frequency calculation
 
-# Keep only positive frequencies (since the signal is real)
-positive_frequencies = frequency[:len(frequency)//2]
 magnitude = magnitude[:len(magnitude)//2]
+frequency = frequency[:len(frequency)//2]  # Update frequency to match the new magnitude length
 
 # Plot the original audio signal
 plt.figure(figsize=(10, 4))
@@ -33,7 +34,7 @@ nyquist_limit = sr / 2
 
 # Plot the Fourier Transform
 plt.figure(figsize=(10, 4))
-plt.plot(positive_frequencies, magnitude)
+plt.plot(frequency, magnitude)
 plt.title('Fourier Transform')
 plt.xlabel('Frequency (Hz)')
 plt.ylabel('Magnitude')
@@ -63,8 +64,8 @@ plt.show()
 print("\nTASK: Evaluate and represent its Fourier Transform. Do the reverse transform, save the audio, and check that it’s the same as the input audio.\n")
 
 # Harmonic Analysis
-harmonic_indices = np.where((positive_frequencies > 0) & (positive_frequencies < nyquist_limit / 2))
-noise_indices = np.where((positive_frequencies >= nyquist_limit / 2) & (positive_frequencies < nyquist_limit))
+harmonic_indices = np.where((frequency > 0) & (frequency < nyquist_limit / 2))
+noise_indices = np.where((frequency >= nyquist_limit / 2) & (frequency < nyquist_limit))
 
 hnr = np.sum(magnitude[harmonic_indices]) / np.sum(magnitude[noise_indices])
 print(f'Harmonic-to-Noise Ratio (HNR): {hnr}')
@@ -81,7 +82,7 @@ sorted_peak_indices = np.argsort(magnitude[peaks])
 top_sorted_peak_indices = sorted_peak_indices[-5:]
 
 # Print the top 5 dominant frequencies and their magnitudes (from lowest to highest)
-top_frequencies = positive_frequencies[peaks[top_sorted_peak_indices]]
+top_frequencies = frequency[peaks[top_sorted_peak_indices]]
 top_magnitudes = magnitude[peaks[top_sorted_peak_indices]]
 
 # Combine frequencies and magnitudes into a list of tuples
@@ -96,8 +97,8 @@ for freq, mag in dominant_info:
 
 # Plot the identified peaks on the Fourier Transform plot
 plt.figure(figsize=(10, 4))
-plt.plot(positive_frequencies, magnitude)
-plt.plot(positive_frequencies[peaks[top_sorted_peak_indices]], magnitude[peaks[top_sorted_peak_indices]], 'ro', markersize=8, label='Dominant Frequencies')
+plt.plot(frequency, magnitude)
+plt.plot(frequency[peaks[top_sorted_peak_indices]], magnitude[peaks[top_sorted_peak_indices]], 'ro', markersize=8, label='Dominant Frequencies')
 plt.title('Fourier Transform with Dominant Frequencies')
 plt.xlabel('Frequency (Hz)')
 plt.ylabel('Magnitude')
@@ -107,8 +108,8 @@ plt.tight_layout()
 plt.show()
 
 # Spectral Shape Measures
-centroid = np.sum(positive_frequencies * magnitude) / np.sum(magnitude)
-bandwidth = np.sum(magnitude * (positive_frequencies - centroid)**2) / np.sum(magnitude)
+centroid = np.sum(frequency * magnitude) / np.sum(magnitude)
+bandwidth = np.sum(magnitude * (frequency - centroid)**2) / np.sum(magnitude)
 
 print(f'Spectral Centroid: {centroid} Hz')
 print(f'Spectral Bandwidth: {bandwidth} Hz')
@@ -125,7 +126,7 @@ print(f'Signal-to-Noise Ratio (SNR): {snr} dB')
 
 # Frequency Analysis Bins
 frequency_bins = np.linspace(0, nyquist_limit, 10)  # Adjust the number of bins as needed
-bin_indices = np.digitize(positive_frequencies, frequency_bins)
+bin_indices = np.digitize(frequency, frequency_bins)
 bin_energies = [np.sum(magnitude[bin_indices == i]) for i in range(1, len(frequency_bins))]
 
 # Plot the Frequency Analysis Bins
@@ -179,7 +180,7 @@ top_sorted_polar_indices = top_sorted_polar_indices[top_sorted_polar_indices < l
 polar_angles_degrees = np.degrees(polar_coordinates[polar_peaks[top_sorted_polar_indices]])
 
 # Extract top 5 dominant frequencies and their magnitudes
-top_polar_frequencies = positive_frequencies[polar_peaks[top_sorted_polar_indices]]
+top_polar_frequencies = frequency[polar_peaks[top_sorted_polar_indices]]
 top_polar_magnitudes = magnitude[polar_peaks[top_sorted_polar_indices]]
 
 # Combine frequencies, magnitudes, and angles into a list of tuples
@@ -201,4 +202,55 @@ plt.tight_layout()
 plt.legend()
 plt.show()
 
+# TASK 3: Convert the polar coordinates of the Fourier transform to square images. Save the image, reload it, do the inverse transform, and check that it’s the same as the input audio.
 
+# Convert polar coordinates to a square image
+image_size = int(np.sqrt(len(polar_coordinates)))
+polar_image = polar_coordinates[:image_size**2].reshape((image_size, image_size))
+
+# Plot the grayscale image of polar coordinates
+plt.figure(figsize=(8, 8))
+plt.imshow(polar_image, cmap='gray')  # Use 'gray' colormap for grayscale
+plt.title('Grayscale Image of Polar Coordinates')
+plt.colorbar()
+plt.tight_layout()
+plt.show()
+
+# Save the polar image as a PNG file
+polar_image_path = 'polar_image.png'
+plt.imsave(polar_image_path, polar_image, cmap='gray')
+
+# Reload the polar image
+reloaded_polar_image = plt.imread(polar_image_path)
+
+# Plot the reloaded grayscale image of polar coordinates
+plt.figure(figsize=(8, 8))
+plt.imshow(reloaded_polar_image, cmap='gray')
+plt.title('Reloaded Grayscale Image of Polar Coordinates')
+plt.colorbar()
+plt.tight_layout()
+plt.show()
+
+# Inverse Fourier Transform from the reloaded polar image
+reconstructed_signal = np.fft.ifft(reloaded_polar_image.flatten()).real
+
+# Plot the Reconstructed Audio Signal from the reloaded polar image
+plt.figure(figsize=(10, 4))
+plt.plot(np.arange(len(reconstructed_signal)) / sr, reconstructed_signal)
+plt.title('Reconstructed Audio Signal from Reloaded Polar Image')
+plt.xlabel('Time (s)')
+plt.ylabel('Magnitude')
+plt.tight_layout()
+plt.show()
+
+# Convert polar coordinates to a square image for the reconstructed signal
+reconstructed_polar_coordinates = np.angle(np.fft.fft(reconstructed_signal))
+reconstructed_polar_image = reconstructed_polar_coordinates[:image_size**2].reshape((image_size, image_size))
+
+# Plot the grayscale image of polar coordinates for the reconstructed signal
+plt.figure(figsize=(8, 8))
+plt.imshow(reconstructed_polar_image, cmap='gray')
+plt.title('Grayscale Image of Reconstructed Polar Coordinates')
+plt.colorbar()
+plt.tight_layout()
+plt.show()
