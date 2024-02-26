@@ -18,7 +18,7 @@ sns.set_theme(style="white", palette=None)
 color_pal = plt.rcParams["axes.prop_cycle"].by_key()["color"]
 color_cycle = cycle(plt.rcParams["axes.prop_cycle"].by_key()["color"])
 
-audio_files = ['reconstructed_audio.wav']
+audio_files = [r'C:\Users\nicol\Desktop\Code Projects\Python\P4-Audio\P4-Audio\Codeprojects - Schøler\InverseFourierTransformed.wav']
 
 y, sr = librosa.load(audio_files[0])
 print(f'y: {y[:10]}')
