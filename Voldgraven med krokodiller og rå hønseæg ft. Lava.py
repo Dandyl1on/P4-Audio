@@ -1,38 +1,57 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import scipy.io.wavfile as wavfile
-from scipy.fft import ifft2
+from PIL import Image
+import scipy.fftpack as fft
+import soundfile as sf
+import pygame
 
+def polar_to_rect(mag, phase):
+    # Convert polar coordinates to rectangular coordinates
+    return mag * np.exp(1j * phase)
 
-def image_to_wav(image_path, wav_path):
+def image_to_audio(image_path, audio_path, sample_rate=44100):
     # Load the image
-    image = plt.imread(image_path)
+    img = Image.open(image_path).convert('L')  # Convert to grayscale
+    img = np.array(img)
 
-    # Convert image to grayscale
-    if len(image.shape) == 3:  # If the image is RGB
-        image = np.dot(image[..., :3], [0.2989, 0.5870, 0.1140])
+    # Split polar coordinates
+    mag = img[:, :img.shape[1]//2]
+    phase = img[:, img.shape[1]//2:]
 
-    # Normalize the image to range (0, 255)
-    image = (image - np.min(image)) / (np.max(image) - np.min(image)) * 255
+    # Convert polar coordinates to rectangular coordinates
+    f_transform = polar_to_rect(mag, phase)
 
-    # Perform inverse Fourier transform
-    image_complex = ifft2(image)
+    # Inverse Fourier Transform
+    inv_transform = np.abs(fft.ifft2(f_transform))
 
-    # Take the real part of the complex image
-    image_real = np.real(image_complex)
+    # Normalize values to fit into audio range
+    inv_transform = inv_transform / np.max(inv_transform)
+    inv_transform = (inv_transform * 32767).astype(np.int16)
 
-    # Scale the image to range (0, 255)
-    image_scaled = (image_real - np.min(image_real)) / (np.max(image_real) - np.min(image_real)) * 255
+    # Save as audio file
+    sf.write(audio_path, inv_transform, sample_rate)
 
-    # Convert image to bytes in range(0, 255)
-    image_bytes = image_scaled.astype(np.uint8).flatten()
+def play_audio(audio_path):
+    # Load the audio data
+    data, sample_rate = sf.read(audio_path, dtype='int16')
 
-    # Save bytes as a WAV file
-    wavfile.write(wav_path, 44100, image_bytes)
+    # Initialize pygame mixer
+    pygame.mixer.init(sample_rate)
 
-# Example usage
-image_path = "spectrogram.png"
-wav_path = "HubbaBubbaBirthday.wav"
-image_to_wav(image_path, wav_path)
+    # Convert data to raw bytes
+    raw = data.tobytes()
 
-print(f"Converted image to WAV file: {wav_path}")
+    # Load the sound
+    sound = pygame.mixer.Sound(buffer=raw)
+
+    # Play the sound
+    sound.play()
+
+    # Wait until sound is finished playing
+    pygame.time.wait(int(sound.get_length() * 1000))
+
+if __name__ == "__main__":
+    image_path = "spectrogram.png"
+    audio_path = "HubbaBubbaBirthday3.aiff"
+    image_to_audio(image_path, audio_path)
+    print("Audio file saved successfully.")
+    play_audio(audio_path)
