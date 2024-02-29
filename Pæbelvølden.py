@@ -166,9 +166,15 @@ def audio_to_image(magnitude, phase):
     combined_image.save("output_image.png")
 
 def main():
-    # Load the audio file with a higher sampling rate
-    target_sr = 44100  # You can adjust this to a higher value
+    # Load the audio file without specifying the target sampling rate
     audio_file = 'GI_GMF_B3_353_20140520_n.wav'
+    y, sr_original = librosa.load(audio_file, res_type='kaiser_best')
+
+    # Apply Nyquist Theorem to determine the target sampling rate
+    target_sr_multiplier = 2
+    target_sr = target_sr_multiplier * sr_original
+
+    # Reload the audio with the target sampling rate
     y, sr = librosa.load(audio_file, sr=target_sr, res_type='kaiser_best')
 
     # Represent Input Signal
