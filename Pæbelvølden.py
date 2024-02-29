@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import librosa
 from scipy.io import wavfile
 from scipy.signal import find_peaks
+from PIL import Image
+from scipy.signal import butter, lfilter
 
 def represent_input_signal(y, sr):
     # Plot the original audio signal
@@ -75,15 +77,6 @@ def represent_fourier_transform(y, sr):
     plt.ylabel('Magnitude (dB)')
     plt.legend()
 
-    # Subplot for phase
-    plt.subplot(3, 1, 3)
-    plt.plot(frequency, phase)
-    plt.title('Phase Information')
-    plt.xlabel('Frequency (Hz)')
-    plt.ylabel('Phase')
-    plt.tight_layout()
-    plt.show()
-
     return fft, frequency, magnitude_db, phase
 
 def evaluate_fourier_transform(fft, frequency, magnitude_db, sr, num_bins=10):
@@ -123,21 +116,60 @@ def evaluate_fourier_transform(fft, frequency, magnitude_db, sr, num_bins=10):
 
     return hnr, centroid, bandwidth, flatness, snr, frequency_bins, bin_energies
 
-def represent_polar_coordinates(frequency, fft, phase):
-    # Plot the polar coordinates in the frequency domain with lines connecting points
-    plt.figure(figsize=(8, 6))
-    plt.plot(frequency, phase, 'b-')
-    plt.title('Polar Coordinates of Fourier Transform in Frequency Domain')
-    plt.xlabel('Frequency (Hz)')
-    plt.ylabel('Phase')
+def represent_polar_coordinates(frequency, fft, phase, magnitude_scale=1.0, phase_shift=0.0):
+    # Scale the magnitude and add to the phase
+    scaled_magnitude = np.abs(fft)[:len(phase)] * magnitude_scale
+    adjusted_phase = phase + phase_shift
+
+    # Plot for polar coordinates
+    plt.figure(figsize=(12, 8))
+    plt.polar(adjusted_phase, scaled_magnitude, markersize=1)
+    plt.title('Polar Coordinates of Fourier Transform in Polar Spectrum')
     plt.grid(True)
     plt.show()
 
+    # Plot for phase information
+    plt.figure(figsize=(12, 8))
+    plt.plot(frequency[:len(phase)], adjusted_phase, markersize=1)
+    plt.title('Phase Information')
+    plt.xlabel('Frequency (Hz)')
+    plt.ylabel('Phase')
+    plt.tight_layout()
+    plt.show()
+
+def audio_to_image(magnitude, phase):
+    image_size = 256
+
+    # Resize the phase array to half of the desired size
+    resized_phase = np.resize(phase, (image_size // 2, image_size))
+
+    # Convert polar coordinates to a square image
+    polar_image = resized_phase
+
+    # Normalize the magnitude values to be in the range [0, 255]
+    normalized_magnitude = ((magnitude - np.min(magnitude)) /
+                            (np.max(magnitude) - np.min(magnitude)) * 255).astype(np.uint8)
+
+    # Resize the magnitude array to half of the desired size
+    resized_magnitude = np.resize(normalized_magnitude, (image_size // 2, image_size))
+
+    # Convert magnitude to a square image
+    magnitude_image = resized_magnitude
+
+    # Create a single image by stacking magnitude on top of phase
+    combined_image = np.vstack((magnitude_image, polar_image))
+
+    # Resize the final image to the desired size
+    combined_image = Image.fromarray(combined_image.astype(np.uint8)).resize((image_size, image_size))
+
+    # Save the combined image
+    combined_image.save("output_image.png")
 
 def main():
-    # Load the audio file
+    # Load the audio file with a higher sampling rate
+    target_sr = 44100  # You can adjust this to a higher value
     audio_file = 'GI_GMF_B3_353_20140520_n.wav'
-    y, sr = librosa.load(audio_file)
+    y, sr = librosa.load(audio_file, sr=target_sr, res_type='kaiser_best')
 
     # Represent Input Signal
     represent_input_signal(y, sr)
@@ -148,8 +180,12 @@ def main():
     # Evaluate Fourier Transform
     hnr, centroid, bandwidth, flatness, snr, frequency_bins, bin_energies = evaluate_fourier_transform(fft, frequency, magnitude_db, sr)
 
-    # Represent Polar Coordinates
-    represent_polar_coordinates(frequency, fft, phase)
+    # Represent Polar Coordinates (with magnitude scale and/or phase shift)
+    represent_polar_coordinates(frequency, fft, phase, magnitude_scale=1, phase_shift=0)
+
+    # Convert polar coordinates to image
+    audio_to_image(magnitude_db, phase)
+
 
 if __name__ == "__main__":
     main()
