@@ -2,7 +2,7 @@ import wave
 import pyaudio
 
 # Open the WAV file
-with wave.open('GI_GMF_B3_353_20140520_n.wav', 'rb') as wf:
+with wave.open('../GI_GMF_B3_353_20140520_n.wav', 'rb') as wf:
     # Initialize PyAudio
     p = pyaudio.PyAudio()
 
