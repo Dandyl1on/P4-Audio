@@ -56,26 +56,29 @@ def represent_fourier_transform(y, sr):
     for freq, mag, mag_db in dominant_info:
         print(f'Dominant Frequency: {freq} Hz, Magnitude: {mag}, Magnitude (dB): {mag_db}')
 
-    # Plot the Fourier Transform, its magnitude in dB, and phase with dominant frequencies highlighted
+    # Plot the Fourier Transform with raw magnitude
     plt.figure(figsize=(12, 8))
 
-    # Subplot for raw magnitude
-    plt.subplot(3, 1, 1)
+    # Plot the Fourier Transform with raw magnitude
     plt.plot(frequency, magnitude)
     plt.plot(frequency[peaks], magnitude[peaks], 'ro', markersize=2, label='Dominant Frequencies')
     plt.title('Fourier Transform with Dominant Frequencies (Raw Magnitude)')
     plt.xlabel('Frequency (Hz)')
     plt.ylabel('Magnitude')
     plt.legend()
+    plt.show()
 
-    # Subplot for magnitude in dB
-    plt.subplot(3, 1, 2)
+    # Create a new figure for the next plot
+    plt.figure(figsize=(12, 8))
+
+    # Plot the Fourier Transform with magnitude in dB
     plt.plot(frequency, magnitude_db)
     plt.plot(frequency[peaks], magnitude_db[peaks], 'ro', markersize=2, label='Dominant Frequencies')
     plt.title('Fourier Transform with Dominant Frequencies (Magnitude in dB)')
     plt.xlabel('Frequency (Hz)')
     plt.ylabel('Magnitude (dB)')
     plt.legend()
+    plt.show()
 
     return fft, frequency, magnitude_db, phase
 
