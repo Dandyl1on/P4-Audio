@@ -82,6 +82,12 @@ def represent_fourier_transform(y, sr):
 
     return fft, frequency, magnitude_db, phase
 
+def inverse_fourier_transform(fft_signal):
+    # Perform inverse Fourier transform
+    inverse_FT_transform = np.fft.ifft(fft_signal)
+
+    return inverse_FT_transform
+
 def evaluate_fourier_transform(fft, frequency, magnitude_db, sr, num_bins=10):
     nyquist_limit = sr / 2
     harmonic_indices = np.where((frequency > 0) & (frequency < nyquist_limit / 2))
@@ -140,6 +146,16 @@ def represent_polar_coordinates(frequency, fft, phase, magnitude_scale=1.0, phas
     plt.tight_layout()
     plt.show()
 
+def inverse_polar_transform(magnitude, phase, magnitude_scale=1.0, phase_shift=0.0):
+    # Convert polar coordinates back to rectangular form
+    rectangular_form = np.multiply(magnitude, np.exp(1j * phase))
+
+    # Perform inverse Fourier transform
+    inverse_PC_transform = np.fft.ifft(rectangular_form)
+
+    return inverse_PC_transform
+
+
 def audio_to_image(magnitude, phase):
     image_size = 256
 
@@ -166,9 +182,13 @@ def audio_to_image(magnitude, phase):
     combined_image = Image.fromarray(combined_image.astype(np.uint8)).resize((image_size, image_size))
 
     # Save the combined image
-    combined_image.save("output_image.png")
+    combined_image.save("Output_Image.png")
 
 def main():
+
+    magnitude_scale = 1.0 # Default 1.0
+    phase_shift = 0.0 # Default 0.0
+
     # Load the audio file without specifying the target sampling rate
     audio_file = 'GI_GMF_B3_353_20140520_n.wav'
     y, sr_original = librosa.load(audio_file, res_type='kaiser_best')
@@ -186,15 +206,26 @@ def main():
     # Represent Fourier Transform
     fft, frequency, magnitude_db, phase = represent_fourier_transform(y, sr)
 
+    # Inverse Fourier Transform
+    inverse_FT_transform = inverse_fourier_transform(fft)
+
+    # Save the reconstructed audio from fourier transform as a new .wav file
+    wavfile.write('Inverse_FT.wav', sr_original, inverse_FT_transform.real)
+
     # Evaluate Fourier Transform
     hnr, centroid, bandwidth, flatness, snr, frequency_bins, bin_energies = evaluate_fourier_transform(fft, frequency, magnitude_db, sr)
 
     # Represent Polar Coordinates (with magnitude scale and/or phase shift)
-    represent_polar_coordinates(frequency, fft, phase, magnitude_scale=1, phase_shift=0)
+    represent_polar_coordinates(frequency, fft, phase, magnitude_scale, phase_shift)
+
+    # Inverse Polar Transform with adjustable magnitude scale and/or phase shift
+    inverse_PC_transform = inverse_polar_transform(magnitude_db, phase, magnitude_scale, phase_shift)
+
+    # Save the reconstructed audio from polar coordinates as a new .wav file
+    wavfile.write('Inverse_PC.wav', sr_original, inverse_PC_transform.real)
 
     # Convert polar coordinates to image
     audio_to_image(magnitude_db, phase)
-
 
 if __name__ == "__main__":
     main()
