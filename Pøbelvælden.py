@@ -184,6 +184,28 @@ def audio_to_image(magnitude, phase):
     # Save the combined image
     combined_image.save("Output_Image.png")
 
+def image_to_audio(image_path, sr_original, magnitude_scale=1.0, phase_shift=0.0):
+    # Load the combined image
+    combined_image = Image.open(image_path)
+    combined_array = np.array(combined_image)
+
+    # Separate magnitude and polar components
+    magnitude_image = combined_array[:128, :]
+    polar_image = combined_array[128:, :]
+
+    # Resize the magnitude and polar images to the original size
+    magnitude = np.resize(magnitude_image, (len(magnitude_image) * 2, len(magnitude_image[0])))
+    phase = np.resize(polar_image, (len(polar_image) * 2, len(polar_image[0])))
+
+    # Normalize magnitude values to [0, 1]
+    normalized_magnitude = magnitude / 255.0
+
+    # Inverse Polar Transform
+    inverse_PC_transform = inverse_polar_transform(normalized_magnitude, phase, magnitude_scale, phase_shift)
+
+    # Save the reconstructed audio from polar coordinates as a new .wav file
+    wavfile.write('Image_to_Audio.wav', sr_original, inverse_PC_transform.real)
+
 def main():
 
     magnitude_scale = 1.0 # Default 1.0
@@ -226,6 +248,13 @@ def main():
 
     # Convert polar coordinates to image
     audio_to_image(magnitude_db, phase)
+
+    # Convert polar coordinates to image
+    audio_to_image(magnitude_db, phase)
+
+    # Convert image back to audio
+    image_path = "Output_Image.png"  # Adjust this path based on your saved image
+    image_to_audio(image_path, sr_original)
 
 if __name__ == "__main__":
     main()
