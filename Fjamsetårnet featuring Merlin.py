@@ -145,7 +145,6 @@ def represent_polar_coordinates(frequency, fft, phase, magnitude_scale=1.0, phas
     plt.show()
 
     return scaled_magnitude, adjusted_phase
-
 def inverse_polar_transform(magnitude, phase):
     # Convert polar coordinates back to rectangular form
     rectangular_form = np.multiply(magnitude, np.exp(1j * phase))
@@ -181,7 +180,6 @@ def audio_to_image(adjusted_magnitude, adjusted_phase):
 
     # Save the combined image
     combined_image.save("Output_Image.png")
-
 def image_to_audio(image_path, sr_original):
     # Load the image
     img = Image.open(image_path)
