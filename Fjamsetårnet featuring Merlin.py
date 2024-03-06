@@ -268,15 +268,14 @@ def main():
 
     # Convert polar coordinates to image
     audio_to_image(magnitude_db, phase)
-
-        # audio_to_image(magnitude_db, phase) gives the right image but the wrong audio (?)
-        # audio_to_image(scaled_magnitude, adjusted_phase) gives the wrong image but the right audio (?)
-
+    
     # Convert image back to audio
     image_path = "Output_Image.png"
     reconstructed_audio = image_to_audio(image_path, sr_original)
 
     wavfile.write('Reconstructed_Audio.wav', sr_original, reconstructed_audio)
+
+    represent_rec_audio = represent_fourier_transform(reconstructed_audio, sr_original)
 
 if __name__ == "__main__":
     main()
