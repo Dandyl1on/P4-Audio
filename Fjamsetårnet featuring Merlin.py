@@ -195,10 +195,12 @@ def image_to_audio(image_path, sr_original):
 
     # Reshape and normalize the magnitude array
     magnitude = magnitude_img.reshape(-1)
-    normalized_magnitude = magnitude / 255.0
+
+    # Reverse the dB conversion to get raw magnitude values
+    raw_magnitude = 10 ** (magnitude / 20.0)
 
     # Retrieve the original magnitude values
-    magnitude = normalized_magnitude * (np.max(magnitude) - np.min(magnitude)) + np.min(magnitude)
+    magnitude = raw_magnitude * (np.max(raw_magnitude) - np.min(raw_magnitude)) + np.min(raw_magnitude)
 
     # Retrieve polar coordinates from the polar part of the image
     polar_coordinates = polar_img.reshape(-1)
@@ -265,7 +267,7 @@ def main():
     wavfile.write('Inverse_PC.wav', sr_original, inverse_PC_transform.real)
 
     # Convert polar coordinates to image
-    audio_to_image(scaled_magnitude, adjusted_phase)
+    audio_to_image(magnitude_db, phase)
 
         # audio_to_image(magnitude_db, phase) gives the right image but the wrong audio (?)
         # audio_to_image(scaled_magnitude, adjusted_phase) gives the wrong image but the right audio (?)
