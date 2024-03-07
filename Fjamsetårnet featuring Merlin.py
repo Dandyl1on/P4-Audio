@@ -145,7 +145,6 @@ def represent_polar_coordinates(frequency, fft, phase, magnitude_scale=1.0, phas
     plt.show()
 
     return scaled_magnitude, adjusted_phase
-
 def inverse_polar_transform(magnitude, phase):
     # Convert polar coordinates back to rectangular form
     rectangular_form = np.multiply(magnitude, np.exp(1j * phase))
@@ -154,7 +153,7 @@ def inverse_polar_transform(magnitude, phase):
     inverse_PC_transform = np.fft.ifft(rectangular_form)
 
     return inverse_PC_transform
-def audio_to_image(adjusted_magnitude, adjusted_phase):
+def audio_to_image(adjusted_magnitude, adjusted_phase, magnitude_scale=1.0):
     image_size = 256
 
     # Normalize the adjusted magnitude values to be in the range [0, 255]
@@ -171,7 +170,7 @@ def audio_to_image(adjusted_magnitude, adjusted_phase):
     polar_image = resized_phase
 
     # Convert magnitude to a square image
-    magnitude_image = resized_magnitude
+    magnitude_image = resized_magnitude * magnitude_scale  # Adjust the scaling factor
 
     # Create a single image by stacking magnitude on top of phase
     combined_image = np.vstack((magnitude_image, polar_image))
@@ -227,7 +226,7 @@ def image_to_audio(image_path, sr_original):
     return reconstructed_audio.real
 
 def main():
-    magnitude_scale = 1.0  # Default 1.0
+    magnitude_scale = 1.1  # Default 1.0
     phase_shift = 0.0  # Default 0.0. Use radians.
 
     # Load the audio file without specifying the target sampling rate
@@ -267,7 +266,7 @@ def main():
     wavfile.write('Inverse_PC.wav', sr_original, inverse_PC_transform.real)
 
     # Convert polar coordinates to image
-    audio_to_image(magnitude_db, phase)
+    audio_to_image(magnitude_db, phase, magnitude_scale)
     
     # Convert image back to audio
     image_path = "Output_Image.png"
