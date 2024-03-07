@@ -226,7 +226,7 @@ def image_to_audio(image_path, sr_original):
     return reconstructed_audio.real
 
 def main():
-    magnitude_scale = 1.1  # Default 1.0
+    magnitude_scale = 1.0  # Default 1.0
     phase_shift = 0.0  # Default 0.0. Use radians.
 
     # Load the audio file without specifying the target sampling rate
@@ -266,8 +266,8 @@ def main():
     wavfile.write('Inverse_PC.wav', sr_original, inverse_PC_transform.real)
 
     # Convert polar coordinates to image
-    audio_to_image(magnitude_db, phase, magnitude_scale)
-    
+    audio_to_image(magnitude_db, phase+phase_shift, magnitude_scale)
+
     # Convert image back to audio
     image_path = "Output_Image.png"
     reconstructed_audio = image_to_audio(image_path, sr_original)
