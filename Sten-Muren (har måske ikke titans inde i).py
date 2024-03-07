@@ -3,254 +3,273 @@ import matplotlib.pyplot as plt
 import librosa
 from scipy.io import wavfile
 from scipy.signal import find_peaks
+from PIL import Image
+from scipy.signal import butter, lfilter
 
-# Load the audio file
-audio_file = 'GI_GMF_B3_353_20140520_n.wav'
-y, sr = librosa.load(audio_file)
+def represent_input_signal(y, sr):
+    # Plot the original audio signal
+    plt.figure(figsize=(10, 4))
+    # plt.plot(np.arange(len(y)) / sr, y)
+    # plt.title('Original Audio Signal')
+    # plt.xlabel('Time (s)')
+    # plt.ylabel('Magnitude')
+    # plt.tight_layout()
+    # plt.show()
 
-print(sr)
+def represent_fourier_transform(y, sr):
+    # Compute the Fourier Transform
+    fft = np.fft.fft(y)
+    magnitude = np.abs(fft)
+    phase = np.angle(fft)  # Extract phase information
+    frequency = np.fft.fftfreq(len(magnitude), 1/sr)
 
-# TASK 1: Evaluate and represent the Fourier Transform of the input audio signal.
+    # Update frequency, magnitude, and phase to match the new length
+    magnitude = magnitude[:len(magnitude)//2]
+    phase = phase[:len(phase)//2]
+    frequency = frequency[:len(frequency)//2]
 
-# Compute the Fourier Transform
-fft = np.fft.fft(y)
-magnitude = np.abs(fft)
-frequency = np.fft.fftfreq(len(magnitude), 1/sr)  # Updated frequency calculation
+    # Convert magnitude to decibels (dB)
+    magnitude_db = 20 * np.log10(magnitude)
 
-magnitude = magnitude[:len(magnitude)//2]
-frequency = frequency[:len(frequency)//2]  # Update frequency to match the new magnitude length
+    # Find peaks in the magnitude spectrum with a height threshold
+    threshold_value = 0.05 * np.max(magnitude)
+    peaks, _ = find_peaks(magnitude, height=threshold_value)
 
-# Plot the original audio signal
-plt.figure(figsize=(10, 4))
-plt.plot(np.arange(len(y)) / sr, y)
-plt.title('Original Audio Signal')
-plt.xlabel('Time (s)')
-plt.ylabel('Magnitude')
-plt.tight_layout()
-plt.show()
+    # Sort peaks by magnitude in ascending order
+    sorted_peak_indices = np.argsort(magnitude[peaks])
 
-# Set Nyquist frequency limit (for visualization purposes only)
-nyquist_limit = sr / 2
+    # Select the top 5 peaks
+    top_sorted_peak_indices = sorted_peak_indices[-5:]
 
-# Plot the Fourier Transform
-plt.figure(figsize=(10, 4))
-plt.plot(frequency, magnitude)
-plt.title('Fourier Transform')
-plt.xlabel('Frequency (Hz)')
-plt.ylabel('Magnitude')
-plt.xlim(0, nyquist_limit)  # Set the x-axis limit to the Nyquist frequency limit
+    # Print the top 5 dominant frequencies and their magnitudes (from lowest to highest)
+    top_frequencies = frequency[peaks[top_sorted_peak_indices]]
+    top_magnitudes = magnitude[peaks[top_sorted_peak_indices]]
+    top_magnitudes_db = magnitude_db[peaks[top_sorted_peak_indices]]
 
-# Set custom tick positions and labels for better readability
-custom_ticks = np.arange(0, nyquist_limit, 500)  # Smaller tick interval
-plt.xticks(custom_ticks, [f'{int(tick)}' for tick in custom_ticks])
+    # Combine frequencies and magnitudes into a list of tuples
+    dominant_info = list(zip(top_frequencies, top_magnitudes, top_magnitudes_db))
 
-plt.tight_layout()
-plt.show()
+    # Sort the list by frequency in ascending order
+    dominant_info.sort(key=lambda x: x[0])
 
-# Inverse Fourier Transform
-reconstructed_signal = np.fft.ifft(fft).real
+    # # Print the sorted dominant frequencies, raw magnitudes, and magnitudes in dB
+    # for freq, mag, mag_db in dominant_info:
+    #     print(f'Dominant Frequency: {freq} Hz, Magnitude: {mag}, Magnitude (dB): {mag_db}')
+    #
+    # # Plot the Fourier Transform with raw magnitude
+    # plt.figure(figsize=(12, 8))
+    #
+    # # Plot the Fourier Transform with raw magnitude
+    # plt.plot(frequency, magnitude)
+    # plt.plot(frequency[peaks], magnitude[peaks], 'ro', markersize=2, label='Dominant Frequencies')
+    # plt.title('Fourier Transform with Dominant Frequencies (Raw Magnitude)')
+    # plt.xlabel('Frequency (Hz)')
+    # plt.ylabel('Magnitude')
+    # plt.legend()
+    # plt.show()
 
-# Plot the Reconstructed Audio Signal
-plt.figure(figsize=(10, 4))
-plt.plot(np.arange(len(reconstructed_signal)) / sr, reconstructed_signal)
-plt.title('Reconstructed Audio Signal')
-plt.xlabel('Time (s)')
-plt.ylabel('Magnitude')
-plt.tight_layout()
-plt.show()
+    # # Create a new figure for the next plot
+    # plt.figure(figsize=(12, 8))
+    #
+    # # Plot the Fourier Transform with magnitude in dB
+    # plt.plot(frequency, magnitude_db)
+    # plt.plot(frequency[peaks], magnitude_db[peaks], 'ro', markersize=2, label='Dominant Frequencies')
+    # plt.title('Fourier Transform with Dominant Frequencies (Magnitude in dB)')
+    # plt.xlabel('Frequency (Hz)')
+    # plt.ylabel('Magnitude (dB)')
+    # plt.legend()
+    # plt.show()
 
-# Trying methods for analysis and evaluation of the fourier transform of the audio signal.
+    return fft, frequency, magnitude_db, phase
 
-print("\nTASK: Evaluate and represent its Fourier Transform. Do the reverse transform, save the audio, and check that it’s the same as the input audio.\n")
+def inverse_fourier_transform(fft_signal):
+    # Perform inverse Fourier transform
+    inverse_FT_transform = np.fft.ifft(fft_signal)
 
-# Harmonic Analysis
-harmonic_indices = np.where((frequency > 0) & (frequency < nyquist_limit / 2))
-noise_indices = np.where((frequency >= nyquist_limit / 2) & (frequency < nyquist_limit))
+    return inverse_FT_transform
 
-hnr = np.sum(magnitude[harmonic_indices]) / np.sum(magnitude[noise_indices])
-print(f'Harmonic-to-Noise Ratio (HNR): {hnr}')
+def evaluate_fourier_transform(fft, frequency, magnitude_db, sr, num_bins=10):
+    nyquist_limit = sr / 2
+    harmonic_indices = np.where((frequency > 0) & (frequency < nyquist_limit / 2))
+    noise_indices = np.where((frequency >= nyquist_limit / 2) & (frequency < nyquist_limit))
+    hnr = np.sum(np.abs(fft)[harmonic_indices]) / np.sum(np.abs(fft)[noise_indices])
+    print(f'\nHarmonic-to-Noise Ratio (HNR): {hnr:.2f} (High indicates a clearer signal))')
 
-# Find peaks in the magnitude spectrum with a height threshold
-# Here, we set the threshold to be 5% of the maximum magnitude
-threshold_value = 0.05 * np.max(magnitude)
-peaks, _ = find_peaks(magnitude, height=threshold_value)
+    signal_power = np.sum(np.abs(fft)[harmonic_indices])
+    noise_power = np.sum(np.abs(fft)[noise_indices])
+    snr = 10 * np.log10(signal_power / noise_power)
+    print(f'\nSignal-to-Noise Ratio (SNR): {snr:.2f} dB (High indicates a clearer signal))')
 
-# Sort peaks by magnitude in ascending order
-sorted_peak_indices = np.argsort(magnitude[peaks])
+    centroid = np.sum(frequency * np.abs(fft)[:len(frequency)]) / np.sum(np.abs(fft)[:len(frequency)])
+    bandwidth = np.sum(np.abs(fft)[:len(frequency)] * (frequency - centroid) ** 2) / np.sum(
+        np.abs(fft)[:len(frequency)])
+    print(
+        f'\nSpectral Centroid: {centroid:.2f} Hz (Energy distributed around this frequency(center of mass/average frequency))')
+    print(f'\nSpectral Bandwidth: {bandwidth:.2f} Hz (High indicates a broader frequency range)')
 
-# Select the top 5 peaks
-top_sorted_peak_indices = sorted_peak_indices[-5:]
+    flatness = np.exp(np.mean(np.log(np.abs(fft)[:len(frequency)]))) / (np.mean(np.abs(fft)[:len(frequency)]))
+    print(f'\nSpectral Flatness: {flatness:.2f} (High indicates a more flat spectrum)')
 
-# Print the top 5 dominant frequencies and their magnitudes (from lowest to highest)
-top_frequencies = frequency[peaks[top_sorted_peak_indices]]
-top_magnitudes = magnitude[peaks[top_sorted_peak_indices]]
+    frequency_bins = np.linspace(0, nyquist_limit, num_bins)  # Adjust the number of bins as needed
+    bin_indices = np.digitize(frequency, frequency_bins)
+    bin_energies = [np.sum(np.abs(fft)[:len(frequency)][bin_indices == i]) for i in range(1, len(frequency_bins))]
 
-# Combine frequencies and magnitudes into a list of tuples
-dominant_info = list(zip(top_frequencies, top_magnitudes))
+    # # Plot the Frequency Analysis Bins
+    # plt.figure(figsize=(10, 4))
+    # plt.bar(frequency_bins[:-1], bin_energies, width=np.diff(frequency_bins), align='edge')
+    # plt.title('Frequency Analysis Bins')
+    # plt.xlabel('Frequency (Hz)')
+    # plt.ylabel('Energy')
+    # plt.tight_layout()
+    # plt.show()
 
-# Sort the list by magnitude in ascending order
-dominant_info.sort(key=lambda x: x[1])
+    return hnr, centroid, bandwidth, flatness, snr, frequency_bins, bin_energies
 
-# Print the sorted dominant frequencies and their magnitudes
-for freq, mag in dominant_info:
-    print(f'Dominant Frequency: {freq} Hz, Magnitude: {mag}')
+def represent_polar_coordinates(frequency, fft, phase, magnitude_scale=1.0, phase_shift=0.0):
+    # Scale the magnitude and add to the phase
+    scaled_magnitude = np.abs(fft)[:len(phase)] * magnitude_scale
+    adjusted_phase = phase + phase_shift
 
-# Plot the identified peaks on the Fourier Transform plot
-plt.figure(figsize=(10, 4))
-plt.plot(frequency, magnitude)
-plt.plot(frequency[peaks[top_sorted_peak_indices]], magnitude[peaks[top_sorted_peak_indices]], 'ro', markersize=8, label='Dominant Frequencies')
-plt.title('Fourier Transform with Dominant Frequencies')
-plt.xlabel('Frequency (Hz)')
-plt.ylabel('Magnitude')
-plt.xlim(0, nyquist_limit)
-plt.legend()
-plt.tight_layout()
-plt.show()
+    # # Plot for polar coordinates
+    # plt.figure(figsize=(12, 8))
+    # plt.polar(adjusted_phase, scaled_magnitude, markersize=1)
+    # plt.title('Polar Coordinates of Fourier Transform in Polar Spectrum')
+    # plt.grid(True)
+    # plt.show()
+    #
+    # # Plot for phase information
+    # plt.figure(figsize=(12, 8))
+    # plt.plot(frequency[:len(phase)], adjusted_phase, markersize=1)
+    # plt.title('Phase Information')
+    # plt.xlabel('Frequency (Hz)')
+    # plt.ylabel('Phase')
+    # plt.tight_layout()
+    # plt.show()
 
-# Spectral Shape Measures
-centroid = np.sum(frequency * magnitude) / np.sum(magnitude)
-bandwidth = np.sum(magnitude * (frequency - centroid)**2) / np.sum(magnitude)
+def inverse_polar_transform(magnitude, phase, magnitude_scale=1.0, phase_shift=0.0):
+    # Convert polar coordinates back to rectangular form
+    rectangular_form = np.multiply(magnitude, np.exp(1j * phase))
 
-print(f'Spectral Centroid: {centroid} Hz')
-print(f'Spectral Bandwidth: {bandwidth} Hz')
+    # Perform inverse Fourier transform
+    inverse_PC_transform = np.fft.ifft(rectangular_form)
 
-# Spectral Flatness
-flatness = np.exp(np.mean(np.log(magnitude))) / (np.mean(magnitude))
-print(f'Spectral Flatness: {flatness}')
+    return inverse_PC_transform
 
-# Signal-to-Noise Ratio (SNR)
-signal_power = np.sum(magnitude[harmonic_indices])
-noise_power = np.sum(magnitude[noise_indices])
-snr = 10 * np.log10(signal_power / noise_power)
-print(f'Signal-to-Noise Ratio (SNR): {snr} dB')
 
-# Frequency Analysis Bins
-frequency_bins = np.linspace(0, nyquist_limit, 10)  # Adjust the number of bins as needed
-bin_indices = np.digitize(frequency, frequency_bins)
-bin_energies = [np.sum(magnitude[bin_indices == i]) for i in range(1, len(frequency_bins))]
+def audio_to_image(magnitude, phase):
+    image_size = 256
 
-# Plot the Frequency Analysis Bins
-plt.figure(figsize=(10, 4))
-plt.bar(frequency_bins[:-1], bin_energies, width=np.diff(frequency_bins), align='edge')
-plt.title('Frequency Analysis Bins')
-plt.xlabel('Frequency (Hz)')
-plt.ylabel('Energy')
-plt.tight_layout()
-plt.show()
+    # Resize the phase array to half of the desired size
+    resized_phase = np.resize(phase, (image_size // 2, image_size))
 
-# TASK 2: Evaluate and represent the Polar Coordinates of the Fourier Transform of the input audio signal.
+    # Convert polar coordinates to a square image
+    polar_image = resized_phase
 
-# Compute the polar coordinates using the entire frequency range
-polar_coordinates = np.angle(fft)
+    # Normalize the magnitude values to be in the range [0, 255]
+    normalized_magnitude = ((magnitude - np.min(magnitude)) /
+                            (np.max(magnitude) - np.min(magnitude)) * 255).astype(np.uint8)
 
-# Plot the polar coordinates using a polar plot
-plt.figure(figsize=(10, 4))
-plt.polar(polar_coordinates, np.abs(fft))
-plt.title('Polar Coordinates of Fourier Transform')
-plt.tight_layout()
-plt.show()
+    # Resize the magnitude array to half of the desired size
+    resized_magnitude = np.resize(normalized_magnitude, (image_size // 2, image_size))
 
-# Inverse Fourier Transform
-reconstructed_signal = np.fft.ifft(fft).real
+    # Convert magnitude to a square image
+    magnitude_image = resized_magnitude
 
-# Plot the Reconstructed Audio Signal
-plt.figure(figsize=(10, 4))
-plt.plot(np.arange(len(reconstructed_signal)) / sr, reconstructed_signal)
-plt.title('Reconstructed Audio Signal from Fourier Transform')
-plt.xlabel('Time (s)')
-plt.ylabel('Magnitude')
-plt.tight_layout()
-plt.show()
+    # Create a single image by stacking magnitude on top of phase
+    combined_image = np.vstack((magnitude_image, polar_image))
 
-print("\nTASK: Evaluate and represent the polar coordinates. Do the reverse transform, save the audio, and check that it’s the same as the input audio.\n")
+    # Resize the final image to the desired size
+    combined_image = Image.fromarray(combined_image.astype(np.uint8)).resize((image_size, image_size))
 
-# Find peaks in polar coordinates with a height threshold
-polar_peaks, _ = find_peaks(magnitude, height=threshold_value)
+    # Save the combined image
+    combined_image.save("Output_Image.png")
 
-# Sort polar peaks by magnitude in ascending order
-sorted_polar_indices = np.argsort(magnitude[polar_peaks])
 
-# Select the top 5 polar peaks
-top_sorted_polar_indices = sorted_polar_indices[-5:]
+def image_to_audio(image_path):
+    image = Image.open(image_path)
+    image_data = np.array(image)
 
-# Ensure that the indices are within bounds
-top_sorted_polar_indices = top_sorted_polar_indices[top_sorted_polar_indices < len(polar_peaks)]
+    magnitude = image_data[:256]
+    phase = image_data[256:]
 
-# Convert radian angles to degrees
-polar_angles_degrees = np.degrees(polar_coordinates[polar_peaks[top_sorted_polar_indices]])
+    duration = 2  # Duration of the piano tone in seconds
+    sample_rate = 44100  # Sampling rate
+    frequency = 440  # Frequency of the piano tone in Hz
+    attack_time = 0.01  # Attack time in seconds
+    decay_time = 0.2  # Decay time in seconds
+    sustain_level = 0.5  # Sustain level (between 0 and 1)
+    release_time = 0.1  # Release time in seconds
+    piano_tone = generate_piano_tone(duration, sample_rate, frequency)
+    piano_tone_with_envelope = apply_adsr_envelope(piano_tone, attack_time, decay_time, sustain_level, release_time, sample_rate)
+    # Save the synthesized piano tone as a WAV file
+    wavfile.write('piano_tone.wav', sample_rate, piano_tone_with_envelope)
 
-# Extract top 5 dominant frequencies and their magnitudes
-top_polar_frequencies = frequency[polar_peaks[top_sorted_polar_indices]]
-top_polar_magnitudes = magnitude[polar_peaks[top_sorted_polar_indices]]
+def generate_piano_tone(duration, sample_rate, frequency):
+    t = np.linspace(0, duration, int(duration * sample_rate), endpoint=False)
+    tone = np.zeros_like(t)
+    for harmonic in range(1, 5):  # Generate harmonics up to the 4th harmonic
+        amplitude = 1 / harmonic  # Amplitude decreases with increasing harmonic
+        harmonic_frequency = frequency * harmonic
+        tone += amplitude * np.sin(2 * np.pi * harmonic_frequency * t)
+    return tone
 
-# Combine frequencies, magnitudes, and angles into a list of tuples
-top_polar_info = list(zip(top_polar_frequencies, top_polar_magnitudes, polar_coordinates[polar_peaks[top_sorted_polar_indices]], polar_angles_degrees))
+def apply_adsr_envelope(signal, attack_time, decay_time, sustain_level, release_time, sample_rate):
+    total_samples = len(signal)
+    attack_samples = int(attack_time * sample_rate)
+    decay_samples = int(decay_time * sample_rate)
+    release_samples = int(release_time * sample_rate)
 
-# Sort the list by magnitude in ascending order
-top_polar_info.sort(key=lambda x: x[1])
+    envelope = np.ones_like(signal)
+    envelope[:attack_samples] = np.linspace(0, 1, attack_samples)
+    envelope[attack_samples:attack_samples + decay_samples] = np.linspace(1, sustain_level, decay_samples)
+    envelope[-release_samples:] = np.linspace(sustain_level, 0, release_samples)
 
-# Print the sorted top 5 dominant frequencies, magnitudes, and angles in both radians and degrees for reference
-for freq, mag, angle_rad, angle_deg in top_polar_info:
-    print(f'Dominant Frequency: {freq} Hz, Magnitude: {mag}, Angle (Radians): {angle_rad}, Angle (Degrees): {angle_deg} degrees')
+    return signal * envelope
 
-# Plot the identified polar peaks on the Polar Coordinates plot
-plt.figure(figsize=(10, 4))
-plt.polar(polar_coordinates, np.abs(fft))
-plt.plot(polar_coordinates[polar_peaks[top_sorted_polar_indices]], magnitude[polar_peaks[top_sorted_polar_indices]], 'ro', markersize=8, label='Dominant Frequencies')
-plt.title('Polar Coordinates of Fourier Transform with Dominant Frequencies')
-plt.tight_layout()
-plt.legend()
-plt.show()
+def main():
 
-# TASK 3: Convert the polar coordinates of the Fourier transform to square images. Save the image, reload it, do the inverse transform, and check that it’s the same as the input audio.
+    magnitude_scale = 1.0 # Default 1.0
+    phase_shift = 0.0 # Default 0.0
 
-# Convert polar coordinates to a square image
-image_size = int(np.sqrt(len(polar_coordinates)))
-polar_image = polar_coordinates[:image_size**2].reshape((image_size, image_size))
+    # Load the audio file without specifying the target sampling rate
+    audio_file = 'GI_GMF_B3_353_20140520_n.wav'
+    y, sr_original = librosa.load(audio_file, res_type='kaiser_best')
 
-# Plot the grayscale image of polar coordinates
-plt.figure(figsize=(8, 8))
-plt.imshow(polar_image, cmap='gray')  # Use 'gray' colormap for grayscale
-plt.title('Grayscale Image of Polar Coordinates')
-plt.colorbar()
-plt.tight_layout()
-plt.show()
+    # Apply Nyquist Theorem to determine the target sampling rate
+    target_sr_multiplier = 2
+    target_sr = target_sr_multiplier * sr_original
 
-# Save the polar image as a PNG file
-polar_image_path = 'polar_image.png'
-plt.imsave(polar_image_path, polar_image, cmap='gray')
+    # Reload the audio with the target sampling rate
+    y, sr = librosa.load(audio_file, sr=target_sr, res_type='kaiser_best')
 
-# Reload the polar image
-reloaded_polar_image = plt.imread(polar_image_path)
+    # Represent Input Signal
+    represent_input_signal(y, sr)
 
-# Plot the reloaded grayscale image of polar coordinates
-plt.figure(figsize=(8, 8))
-plt.imshow(reloaded_polar_image, cmap='gray')
-plt.title('Reloaded Grayscale Image of Polar Coordinates')
-plt.colorbar()
-plt.tight_layout()
-plt.show()
+    # Represent Fourier Transform
+    fft, frequency, magnitude_db, phase = represent_fourier_transform(y, sr)
 
-# Inverse Fourier Transform from the reloaded polar image
-reconstructed_signal = np.fft.ifft(reloaded_polar_image.flatten()).real
+    # Inverse Fourier Transform
+    inverse_FT_transform = inverse_fourier_transform(fft)
 
-# Plot the Reconstructed Audio Signal from the reloaded polar image
-plt.figure(figsize=(10, 4))
-plt.plot(np.arange(len(reconstructed_signal)) / sr, reconstructed_signal)
-plt.title('Reconstructed Audio Signal from Reloaded Polar Image')
-plt.xlabel('Time (s)')
-plt.ylabel('Magnitude')
-plt.tight_layout()
-plt.show()
+    # Save the reconstructed audio from fourier transform as a new .wav file
+    wavfile.write('Inverse_FT.wav', sr_original, inverse_FT_transform.real)
 
-# Convert polar coordinates to a square image for the reconstructed signal
-reconstructed_polar_coordinates = np.angle(np.fft.fft(reconstructed_signal))
-reconstructed_polar_image = reconstructed_polar_coordinates[:image_size**2].reshape((image_size, image_size))
+    # Evaluate Fourier Transform
+    hnr, centroid, bandwidth, flatness, snr, frequency_bins, bin_energies = evaluate_fourier_transform(fft, frequency, magnitude_db, sr)
 
-# Plot the grayscale image of polar coordinates for the reconstructed signal
-plt.figure(figsize=(8, 8))
-plt.imshow(reconstructed_polar_image, cmap='gray')
-plt.title('Grayscale Image of Reconstructed Polar Coordinates')
-plt.colorbar()
-plt.tight_layout()
-plt.show()
+    # Represent Polar Coordinates (with magnitude scale and/or phase shift)
+    represent_polar_coordinates(frequency, fft, phase, magnitude_scale, phase_shift)
+
+    # Inverse Polar Transform with adjustable magnitude scale and/or phase shift
+    inverse_PC_transform = inverse_polar_transform(magnitude_db, phase, magnitude_scale, phase_shift)
+
+    # Save the reconstructed audio from polar coordinates as a new .wav file
+    wavfile.write('Inverse_PC.wav', sr_original, inverse_PC_transform.real)
+
+    # Convert polar coordinates to image
+    audio_to_image(magnitude_db, phase)
+
+if __name__ == "__main__":
+    main()
+    image_path = 'Output_Image.png'
+    image_to_audio(image_path)
