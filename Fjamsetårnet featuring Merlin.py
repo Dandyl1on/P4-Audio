@@ -227,7 +227,7 @@ def image_to_audio(image_path, sr_original):
 
 def main():
     magnitude_scale = 1.0  # Default 1.0
-    phase_shift = np.pi/2  # Default 0.0. Use radians.
+    phase_shift = 0.0  # Default 0.0. Use radians.
 
     # Load the audio file without specifying the target sampling rate
     audio_file = 'GI_GMF_B3_353_20140520_n.wav'
