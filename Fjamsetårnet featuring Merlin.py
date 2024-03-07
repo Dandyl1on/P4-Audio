@@ -226,7 +226,7 @@ def image_to_audio(image_path, sr_original):
     return reconstructed_audio.real
 
 def main():
-    magnitude_scale = 1.0  # Default 1.0
+    magnitude_scale = 1.1  # Default 1.0
     phase_shift = 0.0  # Default 0.0. Use radians.
 
     # Load the audio file without specifying the target sampling rate
