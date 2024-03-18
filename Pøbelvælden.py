@@ -146,7 +146,7 @@ def plot_reconstructed_audio(reconstructed_audio, sr):
 # Function to perform the main operations
 def main():
     magnitude_scale = 1.0
-    phase_shift = 0.0
+    phase_shift = np.pi/2
 
     audio_file = 'GI_GMF_B3_353_20140520_n.wav'
     y, sr = librosa.load(audio_file, sr=None)
@@ -166,9 +166,12 @@ def main():
 
     reconstructed_audio_signal = image_to_audio(image, sr)
 
-    represent_fourier_transform(reconstructed_audio_signal, sr)
+    fft1, frequency1, magnitude1, magnitude_db1, phase1 = represent_fourier_transform(reconstructed_audio_signal, sr)
 
     wavfile.write('Reconstructed_Audio.wav', sr, reconstructed_audio_signal)
+
+    represent_polar_coordinates(frequency1, fft1, phase1, magnitude_scale, phase_shift)
+    plot_polar_coordinates(phase1, magnitude1)
 
 if __name__ == "__main__":
     main()
