@@ -4,10 +4,10 @@ import librosa
 from scipy.io import wavfile
 from PIL import Image
 
-def plot_audio_signal(y, sr):
+def plot_audio_signal(y, sr, name):
     plt.figure(figsize=(10, 4))
     plt.plot(np.arange(len(y)) / sr, y)
-    plt.title('Original Audio Signal')
+    plt.title(name)
     plt.xlabel('Time (s)')
     plt.ylabel('Magnitude')
     plt.tight_layout()
@@ -16,9 +16,10 @@ def plot_audio_signal(y, sr):
 def get_fourier_transform(y, sr):
     fft = np.fft.fft(y)
     magnitude = np.abs(fft)
+    magnitude_db = 20 * np.log10(magnitude + 1e-10)
     phase = np.angle(fft)
     frequency = np.fft.fftfreq(len(magnitude), 1/sr)
-    return fft, frequency, magnitude, phase
+    return fft, frequency, magnitude, magnitude_db, phase
 
 def plot_fourier_transform(frequency, magnitude):
     plt.figure(figsize=(12, 8))
@@ -43,48 +44,59 @@ def plot_phase(frequency, phase):
     plt.show()
 
 def audio_to_image(magnitude, phase):
-    # Image size
-    image_size = len(magnitude)
+    image_size = 256
 
-    # Normalize magnitude to [0, 255]
-    normalized_magnitude = (magnitude - np.min(magnitude)) / (np.max(magnitude) - np.min(magnitude)) * 255
+    # Normalize magnitude to [0, 255] and keep track of scaling factors
+    mag_min = np.min(magnitude)
+    mag_max = np.max(magnitude)
+    normalized_magnitude = ((magnitude - mag_min) / (mag_max - mag_min) * 255).astype(np.uint8)
 
-    # Scale phase to [0, 255]
-    normalized_phase = (phase + np.pi) / (2 * np.pi) * 255
+    # Normalize phase to [-π, π] and keep track of scaling factors
+    phase_min = -np.pi
+    phase_max = np.pi
+    normalized_phase = ((phase - phase_min) / (phase_max - phase_min) * 255).astype(np.uint8)
 
-    # Create magnitude and phase images
-    magnitude_image = normalized_magnitude.reshape((1, -1))
-    phase_image = normalized_phase.reshape((1, -1))
+    resized_magnitude = np.resize(normalized_magnitude, (image_size // 2, image_size))
+    resized_phase = np.resize(normalized_phase, (image_size // 2, image_size))
 
-    # Stack magnitude and phase images
-    combined_image = np.vstack((magnitude_image, phase_image))
+    polar_image = resized_phase
+    magnitude_image = resized_magnitude
 
-    # Convert to PIL Image
-    combined_image = Image.fromarray(combined_image.astype(np.uint8))
+    combined_image = np.vstack((magnitude_image, polar_image))
+    combined_image = Image.fromarray(combined_image.astype(np.uint8)).resize((image_size, image_size))
+    combined_image.save("Output_Image.png")
 
-    return combined_image
+    # Return combined image and scaling factors
+    return combined_image, mag_min, mag_max, phase_min, phase_max
 
-def image_to_audio(image, sr):
-    # Convert image to numpy array
-    image_array = np.array(image)
 
-    # Split magnitude and phase
-    magnitude = image_array[0]
-    phase = image_array[1]
+def image_to_audio(combined_image, mag_min, mag_max, phase_min, phase_max, image_size=256):
+    # Resize the combined image to its original dimensions
+    combined_image = combined_image.resize((image_size, image_size))
 
-    # Scale magnitude back to original range
-    magnitude = (magnitude / 255) * (np.max(magnitude) - np.min(magnitude)) + np.min(magnitude)
+    # Split the combined image into magnitude and phase parts
+    magnitude_image = np.array(combined_image.crop((0, 0, image_size, image_size // 2)))
+    polar_image = np.array(combined_image.crop((0, image_size // 2, image_size, image_size)))
 
-    # Scale phase back to [-π, π]
-    phase = (phase / 255) * 2 * np.pi - np.pi
+    # Resize magnitude and phase images to original sizes
+    resized_magnitude = np.resize(magnitude_image, (image_size // 2, image_size))
+    resized_phase = np.resize(polar_image, (image_size // 2, image_size))
 
-    # Combine magnitude and phase
-    fft = (magnitude*(6*np.pi)) * np.exp(1j * phase) # Multiply by 6*np.pi to increase the magnitude when converting back to audio because the magnitude was scaled down to [0, 1] during image conversion
+    # Rescale magnitude and phase back to original ranges
+    recon_mag = ((resized_magnitude / 255) * (mag_max - mag_min) + mag_min).astype(np.float32)
+    recon_phase = ((resized_phase / 255) * (phase_max - phase_min) + phase_min).astype(np.float32)
 
-    # Inverse Fourier Transform
-    reconstructed_audio = np.fft.ifft(fft).real
+    return recon_mag, recon_phase
 
-    return reconstructed_audio
+def reconstruct_audio(recon_mag, recon_phase):
+
+    # Combine magnitude and phase to obtain the complex spectrum
+    complex_spectrum = recon_mag * np.exp(1j * recon_phase)
+
+    # Perform the inverse Fourier transform
+    reconstructed_audio = np.fft.ifft(complex_spectrum).real
+
+    return reconstructed_audio.real
 
 def main():
     # Load the audio file
@@ -92,10 +104,10 @@ def main():
     y, sr = librosa.load(audio_path, sr=None)
 
     # Plot the audio signal
-    plot_audio_signal(y, sr)
+    plot_audio_signal(y, sr, 'Original Audio Signal')
 
     # Compute the Fourier Transform
-    fft, frequency, magnitude, phase = get_fourier_transform(y, sr)
+    fft, frequency, magnitude, magnitude_db, phase = get_fourier_transform(y, sr)
 
     # Plot the Fourier Transform
     plot_fourier_transform(frequency, magnitude)
@@ -107,16 +119,18 @@ def main():
     plot_phase(frequency, phase)
 
     # Convert the audio signal to an image
-    image = audio_to_image(magnitude, phase)
+    image, mag_min, mag_max, phase_min, phase_max = audio_to_image(magnitude_db, phase)
 
     # Convert the image back to audio
-    reconstructed_audio = image_to_audio(image, sr)
+    recon_mag, recon_phase = image_to_audio(image, mag_min, mag_max, phase_min, phase_max)
 
-    # Plot the reconstructed audio signal
-    plot_audio_signal(reconstructed_audio, sr)
+    reconstructed_audio_signal = reconstruct_audio(recon_mag, recon_phase)
 
-    # Save the reconstructed audio signal
-    wavfile.write('Image_to_Audio.wav', sr, reconstructed_audio)
+    plot_audio_signal(reconstructed_audio_signal, sr, 'Reconstructed Audio Signal')
+
+if __name__ == "__main__":
+    main()
+
 
 if __name__ == "__main__":
     main()
