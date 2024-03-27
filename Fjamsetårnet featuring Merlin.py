@@ -41,7 +41,6 @@ def plot_phase(frequency, phase):
     plt.ylabel('Phase')
     plt.tight_layout()
     plt.show()
-
 def audio_to_image(magnitude, phase):
     # Convert magnitude to decibels
     magnitude_db = 20 * np.log10(magnitude)
@@ -53,8 +52,8 @@ def audio_to_image(magnitude, phase):
     normalized_phase = (phase + np.pi) / (2 * np.pi) * 255
 
     # Reshape magnitude and phase arrays
-    magnitude_image = normalized_magnitude.reshape((-1, 256))[:128]
-    phase_image = normalized_phase.reshape((-1, 256))[:128]
+    magnitude_image = normalized_magnitude.reshape((-1, len(magnitude)))  # Maintain original size
+    phase_image = normalized_phase.reshape((-1, len(phase)))  # Maintain original size
 
     # Combine magnitude and phase images
     combined_image = np.vstack((magnitude_image, phase_image))
@@ -106,6 +105,7 @@ def image_to_audio(image, sr):
     print("Reconstructed audio max:", np.max(reconstructed_audio_normalized))
 
     return reconstructed_audio_normalized
+
 
 def main():
     # Load the audio file
