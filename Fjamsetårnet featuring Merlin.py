@@ -42,7 +42,7 @@ def plot_phase(frequency, phase):
     plt.tight_layout()
     plt.show()
 
-# 4	Wrong image (2 row), wrong sound (decibel, right ranges)
+# 4	Wrong image, right sound and range
 
 def audio_to_image(magnitude, phase):
     # Convert magnitude to decibels
