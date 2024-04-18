@@ -5,6 +5,30 @@ from scipy.io import wavfile
 from PIL import Image
 import math
 
+def GetMaxMagnitude():
+    A = np.tile([-1, 1], 32768)
+    A = np.concatenate((A, [1]))
+
+    B = np.fft.fft(A)
+    B = B[1:]
+
+    B = B[:len(B) // 2]
+
+    R = np.real(B)
+    I = np.imag(B)
+
+    RR = np.zeros((128, 256))
+    II = np.zeros((128, 256))
+
+    for k in range(128):
+        RR[k, :] = R[256 * k:256 * k + 256]
+        II[k, :] = I[256 * k:256 * k + 256]
+
+    AA = np.concatenate((RR, II), axis=0)
+    F = np.max(np.abs(AA))
+
+    return F
+
 def plot_audio_signal(y, sr, name):
     plt.figure(figsize=(10, 4))
     plt.plot(np.arange(len(y)) / sr, y)
@@ -48,10 +72,10 @@ def plot_phase(frequency, phase):
 
 # 4    Wrong image, right sound and range
 
-def audio_to_image(magnitude, phase):
+def audio_to_image(magnitude, phase, contrast_scale, MaxMag):
 
     # first, normalization concerns
-    # phase is between -pi to pi and it doesnt change
+    # phase is between -pi to pi and it doesn't change
 
     # magnitude is a more difficult issue
     # (1) you don't know in advance the max value of magnitude for one file
@@ -69,12 +93,12 @@ def audio_to_image(magnitude, phase):
 
     # magnitude normalization (done in log scale)
     magnitude = np.log(1 + magnitude)
-    magnitude = magnitude / np.log(20861)
+    magnitude = magnitude / np.log(MaxMag)
 
     # now, to be able to even better see, we do a non-linear transform on magnitude using the square root transformation operation
     # 0 will remain at 0, 1 will remain at 1, but medium values will be higher
     # Following the logarithmic transformation, the square root operation is applied to increase the contrast of the image, making small components more visibl
-    magnitude = magnitude ** 0.5
+    magnitude = magnitude ** contrast_scale
 
     # plt.plot(magnitude)
     # plt.show()
@@ -87,8 +111,8 @@ def audio_to_image(magnitude, phase):
     phase = phase / 2   # [0.5, 1.5] to match magnitude range
 
     # now, to between 0 and 255 for image representation as pixels
-    magnitude = magnitude * 255
-    phase = phase * 255
+    magnitude = magnitude * 65536
+    phase = phase * 65536
 
     # Reshape magnitude and phase arrays
     magnitude_image = magnitude.reshape(128, 256)
@@ -99,7 +123,7 @@ def audio_to_image(magnitude, phase):
     # print(combined_image.shape)
 
     # Convert to PIL Image
-    combined_image = Image.fromarray(combined_image.astype(np.uint8))   # All details in image may already be covered in 8-bit, thus no change in 16-bit
+    combined_image = Image.fromarray(combined_image.astype(np.uint16))   # All details in image may already be covered in 8-bit, thus no change in 16-bit
 
     # Save the image (optional)
     combined_image.save('Output_Image.png')
@@ -110,7 +134,7 @@ def audio_to_image(magnitude, phase):
 
     return combined_image
 
-def image_to_audio(sr):
+def image_to_audio(sr, contrast_scale, MaxMag):
 
     image = Image.open('Output_Image.png')
     image_array = np.array(image)
@@ -120,9 +144,9 @@ def image_to_audio(sr):
     magnitude = image_array[:128, :]
     magnitude = magnitude.reshape(-1)
     # and now we do the inverse process as when we were making the image
-    magnitude = magnitude / 255
-    magnitude = magnitude ** 2
-    magnitude = magnitude * np.log(20861)
+    magnitude = magnitude / 65536
+    magnitude = magnitude ** (1 / contrast_scale)
+    magnitude = magnitude * np.log(MaxMag)
     magnitude = np.exp(magnitude) - 1
 
     # plt.plot(magnitude)
@@ -131,7 +155,7 @@ def image_to_audio(sr):
     # extract phase
     phase = image_array[128:, :]
     phase = phase.reshape(-1)
-    phase = phase / 255
+    phase = phase / 65536
     phase = phase * 2
     phase = phase - 1
     phase = phase * np.pi
@@ -159,6 +183,9 @@ def image_to_audio(sr):
 
 def main():
 
+    contrast_scale = 0.25
+
+    MaxMag = GetMaxMagnitude()
 
     # Load the audio file
     audio_path = 'GI_GMF_B3_353_20140520_n.wav'
@@ -177,10 +204,10 @@ def main():
     # plot_phase(frequency, phase)
 
     # Save magnitude and phase as an image
-    audio_to_image(magnitude, phase)
+    audio_to_image(magnitude, phase, contrast_scale, MaxMag)
 
     # Convert the image back to audio
-    reconstructed_audio = image_to_audio(sr)
+    reconstructed_audio = image_to_audio(sr, contrast_scale, MaxMag)
 
     # Plot the reconstructed audio signal
     plot_audio_signal(reconstructed_audio, sr, 'Reconstructed Audio Signal')
