@@ -5,8 +5,8 @@ def main():
     A = np.tile([-1, 1], 32768)
     A = np.concatenate((A, [1]))
 
-    plt.plot(A)
-    plt.show()
+#   plt.plot(A)
+#   plt.show()
 
     B = np.fft.fft(A)
     B = B[1:]
