@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import librosa
 from scipy.io import wavfile
 from PIL import Image
+import math
 
 def plot_audio_signal(y, sr, name):
     plt.figure(figsize=(10, 4))
@@ -15,9 +16,12 @@ def plot_audio_signal(y, sr, name):
 
 def get_fourier_transform(y, sr):
     fft = np.fft.fft(y)
+
     magnitude = np.abs(fft)
+    magnitude = magnitude[:len(magnitude)//2]
     phase = np.angle(fft)
-    frequency = np.fft.fftfreq(len(magnitude), 1/sr)
+    phase = phase[:len(phase) // 2]
+    frequency = (sr / 2) * (np.arange(len(magnitude)) + 1) / len(magnitude)
     return fft, frequency, magnitude, phase
 
 def plot_fourier_transform(frequency, magnitude):
@@ -42,57 +46,101 @@ def plot_phase(frequency, phase):
     plt.tight_layout()
     plt.show()
 
-# 4	Wrong image, right sound and range
+# 4    Wrong image, right sound and range
 
 def audio_to_image(magnitude, phase):
-    # Convert magnitude to decibels
-    # magnitude = 20 * np.log10(magnitude)
 
-    # Normalize magnitude to [0, 255]
-    normalized_magnitude = (magnitude - np.min(magnitude)) / (np.max(magnitude) - np.min(magnitude)) * 255
+    # first, normalization concerns
+    # phase is between -pi to pi and it doesnt change
 
-    # Scale phase to [0, 255]
-    normalized_phase = (phase + np.pi) / (2 * np.pi) * 255
+    # magnitude is a more difficult issue
+    # (1) you don't know in advance the max value of magnitude for one file
+    # if we normalize the magnitude independently file by file, we have a problem later with NN training
+    # indeed, if we do so, the energy values lose their intrinsic meaning
+    # therefore, we have to find the max value the magnitude may ever take
+    # this max value occurs for the FT of one sine wave
+    # it is 20861 (you can evaluate the FT of one sine wave over the same length to confirm)
+    # (2) we have to convert magnitude to log scale, otherwise we don't see anything on the image, as most values are near to zero
+    # then log(zero) will not work as it is minus infinity
+    # so we have to convert to log(1+magnitude) and then normalize
+
+    # plt.plot(magnitude)
+    # plt.show()
+
+    # magnitude normalization (done in log scale)
+    magnitude = np.log(1 + magnitude)
+    magnitude = magnitude / np.log(20861)
+
+    # now, to be able to even better see, we do a non-linear transform on magnitude using the square root transformation operation
+    # 0 will remain at 0, 1 will remain at 1, but medium values will be higher
+    # Following the logarithmic transformation, the square root operation is applied to increase the contrast of the image, making small components more visibl
+    magnitude = magnitude ** 0.5
+
+    # plt.plot(magnitude)
+    # plt.show()
+    # plt.plot(phase)
+    # plt.show()
+
+    # phase normalization
+    phase = phase / np.pi   # [0, 2], or 0 and 2pi radians
+    phase = phase + 1   # [1, 3]
+    phase = phase / 2   # [0.5, 1.5] to match magnitude range
+
+    # now, to between 0 and 255 for image representation as pixels
+    magnitude = magnitude * 255
+    phase = phase * 255
 
     # Reshape magnitude and phase arrays
-    magnitude_image = normalized_magnitude.reshape((256, -1))[:128]  # Reshape to have 256 columns
-    phase_image = normalized_phase.reshape((256, -1))[:128] # Reshape to have 256 columns
+    magnitude_image = magnitude.reshape(128, 256)
+    phase_image = phase.reshape(128,256)
 
     # Combine magnitude and phase images
     combined_image = np.vstack((magnitude_image, phase_image))
+    # print(combined_image.shape)
 
     # Convert to PIL Image
-    combined_image = Image.fromarray(combined_image.astype(np.uint8))
+    combined_image = Image.fromarray(combined_image.astype(np.uint8))   # All details in image may already be covered in 8-bit, thus no change in 16-bit
 
     # Save the image (optional)
     combined_image.save('Output_Image.png')
 
     # Print debugging information
-    print("Magnitude (dB) min:", np.min(magnitude))
-    print("Magnitude (dB) max:", np.max(magnitude))
+    # print("Magnitude (dB) min:", np.min(magnitude))
+    # print("Magnitude (dB) max:", np.max(magnitude))
 
     return combined_image
 
-def image_to_audio(image, sr):
-    # Convert image to numpy array
+def image_to_audio(sr):
+
+    image = Image.open('Output_Image.png')
     image_array = np.array(image)
+    image_array = np.double(image_array)
 
-    # Reshape the image array back to separate magnitude and phase
-    magnitude_rows = image_array[:image_array.shape[0] // 2]
-    phase_rows = image_array[image_array.shape[0] // 2:]
+    # extract magnitude
+    magnitude = image_array[:128, :]
+    magnitude = magnitude.reshape(-1)
+    # and now we do the inverse process as when we were making the image
+    magnitude = magnitude / 255
+    magnitude = magnitude ** 2
+    magnitude = magnitude * np.log(20861)
+    magnitude = np.exp(magnitude) - 1
 
-    # Reshape magnitude and phase arrays
-    magnitude = magnitude_rows.reshape(-1)
-    phase = phase_rows.reshape(-1)
+    # plt.plot(magnitude)
+    # plt.show()
 
-    # Convert decibel values back to linear scale for magnitude
-    # magnitude = 10 ** (magnitude / 20)
+    # extract phase
+    phase = image_array[128:, :]
+    phase = phase.reshape(-1)
+    phase = phase / 255
+    phase = phase * 2
+    phase = phase - 1
+    phase = phase * np.pi
 
-    # Ensure magnitude values are within a reasonable range
-    magnitude = np.clip(magnitude, 1e-6, None)
-
-    # Scale phase back to [-π, π]
-    phase = (phase / 255) * 2 * np.pi - np.pi
+    # reconstruct complete amplitude and phase
+    reversed_magnitude = np.flip(magnitude)
+    magnitude = np.concatenate((magnitude, reversed_magnitude))
+    reversed_phase = np.flip(phase)
+    phase = np.concatenate((phase, -reversed_phase))
 
     # Combine magnitude and phase
     fft = magnitude * np.exp(1j * phase)
@@ -104,18 +152,17 @@ def image_to_audio(image, sr):
     reconstructed_audio_normalized = reconstructed_audio / np.max(np.abs(reconstructed_audio))
 
     # Print debugging information
-    print("Reconstructed audio min:", np.min(reconstructed_audio_normalized))
-    print("Reconstructed audio max:", np.max(reconstructed_audio_normalized))
+    #print("Reconstructed audio min:", np.min(reconstructed_audio_normalized))
+    #print("Reconstructed audio max:", np.max(reconstructed_audio_normalized))
 
     return reconstructed_audio_normalized
 
 def main():
+
+
     # Load the audio file
     audio_path = 'GI_GMF_B3_353_20140520_n.wav'
     y, sr = librosa.load(audio_path, sr=None)
-
-    # Apply nyquist theorem
-    sr = sr // 2
 
     # Plot the audio signal
     plot_audio_signal(y, sr, 'Original Audio Signal')
@@ -124,25 +171,22 @@ def main():
     fft, frequency, magnitude, phase = get_fourier_transform(y, sr)
 
     # Plot the Fourier Transform
-    plot_fourier_transform(frequency, magnitude)
-
-    # Inverse Fourier Transform
-    inverse_FT_transform = inverse_fourier_transform(fft)
+    # plot_fourier_transform(frequency, magnitude)
 
     # Plot the phase spectrum
-    plot_phase(frequency, phase)
+    # plot_phase(frequency, phase)
 
-    # Convert the audio signal to an image
-    image = audio_to_image(magnitude, phase)
+    # Save magnitude and phase as an image
+    audio_to_image(magnitude, phase)
 
     # Convert the image back to audio
-    reconstructed_audio = image_to_audio(image, sr)
+    reconstructed_audio = image_to_audio(sr)
 
     # Plot the reconstructed audio signal
     plot_audio_signal(reconstructed_audio, sr, 'Reconstructed Audio Signal')
 
     # Save the reconstructed audio signal
-    wavfile.write('Image_to_Audio.wav', sr, reconstructed_audio)
+    #wavfile.write('Image_to_Audio.wav', sr, reconstructed_audio)
 
 if __name__ == "__main__":
     main()
