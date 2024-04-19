@@ -183,6 +183,8 @@ def image_to_audio(sr, contrast_scale, MaxMag):
 
 def main():
 
+    bit16 = 65536
+
     contrast_scale = 0.25
 
     MaxMag = GetMaxMagnitude()
