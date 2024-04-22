@@ -5,29 +5,35 @@ from scipy.io import wavfile
 from PIL import Image
 import math
 
-def GetMaxMagnitude():
-    A = np.tile([-1, 1], 32768)
-    A = np.concatenate((A, [1]))
+def get_max_magnitude():
+    # Create a sine wave alternating between -1 and 1
+    sine_wave = np.tile([-1, 1], 32768)
+    sine_wave = np.concatenate((sine_wave, [1]))
 
-    B = np.fft.fft(A)
-    B = B[1:]
+    # Compute the Fourier Transform of the sine wave
+    fft_result = np.fft.fft(sine_wave)
+    fft_result = fft_result[1:]
 
-    B = B[:len(B) // 2]
+    # Extract the real and imaginary parts of the Fourier Transform
+    real_part = np.real(fft_result)
+    imag_part = np.imag(fft_result)
 
-    R = np.real(B)
-    I = np.imag(B)
-
-    RR = np.zeros((128, 256))
-    II = np.zeros((128, 256))
+    # Split the real and imaginary parts into 128x256 grids
+    real_grid = np.zeros((128, 256))
+    imag_grid = np.zeros((128, 256))
 
     for k in range(128):
-        RR[k, :] = R[256 * k:256 * k + 256]
-        II[k, :] = I[256 * k:256 * k + 256]
+        real_grid[k, :] = real_part[256 * k:256 * k + 256]
+        imag_grid[k, :] = imag_part[256 * k:256 * k + 256]
 
-    AA = np.concatenate((RR, II), axis=0)
-    F = np.max(np.abs(AA))
+    # Concatenate the real and imaginary grids
+    combined_grid = np.concatenate((real_grid, imag_grid), axis=0)
 
-    return F
+    # Compute the maximum magnitude
+    max_magnitude = np.max(np.abs(combined_grid))
+
+    return max_magnitude
+
 
 def plot_audio_signal(y, sr, name):
     plt.figure(figsize=(10, 4))
@@ -185,7 +191,7 @@ def main():
 
     contrast_scale = 0.15
 
-    MaxMag = GetMaxMagnitude()
+    MaxMag = get_max_magnitude()
 
     # Load the audio file
     audio_path = 'GI_GMF_B3_353_20140520_n.wav'
