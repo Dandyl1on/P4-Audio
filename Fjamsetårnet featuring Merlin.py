@@ -70,8 +70,6 @@ def plot_phase(frequency, phase):
     plt.tight_layout()
     plt.show()
 
-# 4    Wrong image, right sound and range
-
 def audio_to_image(magnitude, phase, contrast_scale, MaxMag):
 
     # first, normalization concerns
@@ -185,7 +183,7 @@ def main():
 
     bit16 = 65536
 
-    contrast_scale = 0.25
+    contrast_scale = 0.15
 
     MaxMag = GetMaxMagnitude()
 
