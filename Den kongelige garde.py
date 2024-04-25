@@ -3,7 +3,10 @@ import matplotlib.pyplot as plt
 import librosa
 from scipy.io import wavfile
 from PIL import Image
+from scipy.ndimage import gaussian_filter
 import math
+import cv2
+
 
 def plot_audio_signal(y, sr, name):
     plt.figure(figsize=(10, 4))
@@ -67,9 +70,18 @@ def audio_to_image(magnitude, phase):
     # plt.plot(magnitude)
     # plt.show()
 
+    bit8 = False
+    bitRange = 255
+
+    if bit8 == True:
+        bitRange = 255  # 8bit
+    else:
+        bitRange = 65535  # 16bit
+
+
     # magnitude normalization (done in log scale)
     magnitude = np.log(1 + magnitude)
-    magnitude = magnitude / np.log(20861)
+    magnitude = magnitude / np.log(41722)
 
     # now, to be able to even better see, we do a non-linear transform on magnitude
     # 0 will remain at 0, 1 will remain at 1, but medium values will be higher
@@ -85,24 +97,28 @@ def audio_to_image(magnitude, phase):
 
     # here, both phase and magnitude are between 0 and 1
     # now, to between 0 and 255
-    magnitude = magnitude * 65535
-    phase = phase * 65535
-    # magnitude = (magnitude * 65535).astype(np.uint16)
-    # phase = (phase * 65535).astype(np.uint16)
+    magnitude = magnitude * bitRange
+    phase = phase * bitRange
 
     # Reshape magnitude and phase arrays
     magnitude_image = magnitude.reshape(128, 256)
     phase_image = phase.reshape(128, 256)
 
-    # Combine magnitude and phase images
+    # blur first row of magnitude
+    # magnitude_image[0] = cv2.Gaussian_filter(magnitude_image[0], (15, 15), sigmaX=1)
+    # phase_image[0] = cv2.Gaussian_filter(phase_image[0], (15, 15), sigmaX=1)
+
+    magnitude_image = cv2.GaussianBlur(magnitude_image, (15, 15), sigmaX=1)
+    # phase_image = cv2.GaussianBlur(phase_image, (15, 15), sigmaX=1)
+
+    # Recombine magnitude and phase images
     combined_image = np.vstack((magnitude_image, phase_image))
-    # print(combined_image.shape)
 
     # Convert to PIL Image
     combined_image = Image.fromarray(combined_image.astype(np.uint16))
 
     # Save the image (optional)
-    combined_image.save('Output_Image16.png')
+    combined_image.save('Output_Image16BlurredMagTop.png')
 
     # Print debugging information
     # print("Magnitude (dB) min:", np.min(magnitude))
@@ -111,18 +127,26 @@ def audio_to_image(magnitude, phase):
     return combined_image
 
 def image_to_audio(sr):
+    bit8 = False
+    bitRange = 255
 
-    image = Image.open('Output_Image16.png')
-    image_array = np.array(image, dtype=np.uint16)
+    if bit8 == True:
+        bitRange = 255 # 8bit
+    else:
+        bitRange = 65535 # 16bit
+
+    image = Image.open('Output_Image16BlurredMagTop.png')
+    image_array = np.array(image, dtype=np.uint16) # 16bit
+    # image_array = np.array(image) # 8bit
     image_array = np.double(image_array)
 
     # extract magnitude
     magnitude = image_array[:128, :]
     magnitude = magnitude.reshape(-1)
     # and now we do the inverse process as when we were making the image
-    magnitude = magnitude / 65535
+    magnitude = magnitude / bitRange
     magnitude = magnitude ** 2
-    magnitude = magnitude * np.log(20861)
+    magnitude = magnitude * np.log(41722)
     magnitude = np.exp(magnitude) - 1
 
     # plt.plot(magnitude)
@@ -131,7 +155,7 @@ def image_to_audio(sr):
     # extract phase
     phase = image_array[128:, :]
     phase = phase.reshape(-1)
-    phase = phase / 65535
+    phase = phase / bitRange
     phase = phase * 2
     phase = phase - 1
     phase = phase * np.pi
