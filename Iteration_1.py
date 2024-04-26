@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import librosa
 from PIL import Image
 
-
 def represent_input_signal(y, sr):
     # Plot the original audio signal
     plt.figure(figsize=(10, 4))
@@ -16,7 +15,6 @@ def represent_input_signal(y, sr):
     plt.ylabel('Magnitude')
     plt.tight_layout()
     plt.show()
-
 
 def represent_fourier_transform(y, sr):
     # Compute the Fourier Transform

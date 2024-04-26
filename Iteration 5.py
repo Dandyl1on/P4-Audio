@@ -27,21 +27,6 @@ def get_fourier_transform(y, sr):
 
     return fft, frequency, magnitude, phase
 
-def plot_fourier_transform(frequency, magnitude):
-    plt.figure(figsize=(12, 8))
-    plt.plot(frequency, magnitude)
-    plt.title('Fourier Transform')
-    plt.xlabel('Frequency (Hz)')
-    plt.ylabel('Magnitude')
-    plt.tight_layout()
-    plt.show()
-
-def inverse_fourier_transform(fft_signal):
-
-    inverse_FT_transform = np.fft.ifft(fft_signal)
-
-    return inverse_FT_transform.real
-
 def get_max_magnitude():
     sine_wave = np.tile([-1, 1], 32768)
     sine_wave = np.concatenate((sine_wave, [1]))
@@ -126,7 +111,9 @@ def image_to_audio(contrast_scale, MaxMag):
 
 def main():
 
-    contrast_scale = 0.20
+    bit16 = 65536
+
+    contrast_scale = 0.25
 
     MaxMag = get_max_magnitude()
 
@@ -136,10 +123,6 @@ def main():
     plot_audio_signal(y, sr, 'Original Audio Signal')
 
     fft, frequency, magnitude, phase = get_fourier_transform(y, sr)
-
-    plot_fourier_transform(frequency, magnitude)
-
-    wavfile.write('Inverse_FT.wav', sr, inverse_fourier_transform(fft))
 
     audio_to_image(magnitude, phase, contrast_scale, MaxMag)
 
