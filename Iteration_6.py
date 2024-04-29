@@ -1,3 +1,7 @@
+
+# Right image, right sound
+# Additionally made program compatible with any audio file length
+
 import numpy as np
 import matplotlib.pyplot as plt
 import librosa
@@ -184,7 +188,7 @@ def main():
     plot_audio_signal(reconstructed_audio, sr, 'Reconstructed Audio Signal')
 
     # Save the reconstructed audio signal
-    wavfile.write('Image_to_Audio.wav', sr, reconstructed_audio)
+    # wavfile.write('Image_to_Audio.wav', sr, reconstructed_audio)
 
 if __name__ == "__main__":
     main()

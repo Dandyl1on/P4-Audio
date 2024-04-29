@@ -1,5 +1,6 @@
 
 # Wrong image, wrong sound
+# Unnormalized top and bot
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -56,7 +57,6 @@ def represent_fourier_transform(y, sr):
 
     return fft, frequency, magnitude, magnitude_db, phase
 
-
 def audio_to_image(adjusted_magnitude, adjusted_phase):
     image_size = 256
 
@@ -84,7 +84,6 @@ def audio_to_image(adjusted_magnitude, adjusted_phase):
 
     # Save the combined image
     combined_image.save("Output_Image.png")
-
 
 def image_to_audio(image_path, sr_original):
     # Load the image
@@ -128,7 +127,6 @@ def image_to_audio(image_path, sr_original):
 
     return reconstructed_audio.real
 
-
 def main():
     # Load the audio file
     audio_path = 'GI_GMF_B3_353_20140520_n.wav'
@@ -149,7 +147,6 @@ def main():
     reconstructed_audio = image_to_audio(image_path, sr)
 
     # wavfile.write('Reconstructed_Audio.wav', sr_original, reconstructed_audio)
-
 
 if __name__ == "__main__":
     main()

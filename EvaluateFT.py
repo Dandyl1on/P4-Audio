@@ -1,7 +1,9 @@
+
+# Represent and evaluate the Fourier Transform of an audio signal
+
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
-
 
 def load_audio(file_path):
     return wavfile.read(file_path)
@@ -55,7 +57,7 @@ def main():
 
     plot_audio_signal(inverse_ft, sr, 'Inverse Fourier Transform')
 
-    wavfile.write('Inverse_FT.wav', sr, inverse_ft)
+    # wavfile.write('Inverse_FT.wav', sr, inverse_ft)
 
 if __name__ == "__main__":
     main()

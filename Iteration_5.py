@@ -1,3 +1,6 @@
+
+# Right image, right sound (?)
+
 import numpy as np
 import matplotlib.pyplot as plt
 import librosa

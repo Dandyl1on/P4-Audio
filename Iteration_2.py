@@ -1,3 +1,7 @@
+
+# Wrong image (bot), wrong sound
+# Normalized top not bot
+
 import numpy as np
 import matplotlib.pyplot as plt
 import librosa
@@ -5,6 +9,7 @@ from scipy.io import wavfile
 from scipy.signal import find_peaks
 from PIL import Image
 from scipy.signal import butter, lfilter
+
 def represent_input_signal(y, sr):
     # Plot the original audio signal
     plt.figure(figsize=(10, 4))
@@ -14,6 +19,7 @@ def represent_input_signal(y, sr):
     plt.ylabel('Magnitude')
     plt.tight_layout()
     plt.show()
+
 def represent_fourier_transform(y, sr):
     # Compute the Fourier Transform
     fft = np.fft.fft(y)
@@ -82,11 +88,13 @@ def represent_fourier_transform(y, sr):
     plt.show()
 
     return fft, frequency, magnitude, magnitude_db, phase, peaks
+
 def inverse_fourier_transform(fft_signal):
     # Perform inverse Fourier transform
     inverse_FT_transform = np.fft.ifft(fft_signal)
 
     return inverse_FT_transform
+
 def evaluate_fourier_transform(fft, frequency, magnitude_db, sr, num_bins=10):
     nyquist_limit = sr / 2
     harmonic_indices = np.where((frequency > 0) & (frequency < nyquist_limit / 2))
@@ -123,6 +131,7 @@ def evaluate_fourier_transform(fft, frequency, magnitude_db, sr, num_bins=10):
     plt.show()
 
     return hnr, centroid, bandwidth, flatness, snr, frequency_bins, bin_energies
+
 def represent_polar_coordinates(frequency, fft, phase, magnitude_scale=1.0, phase_shift=0.0):
     # Scale the magnitude and add to the phase
     scaled_magnitude = np.abs(fft)[:len(phase)] * magnitude_scale
@@ -145,6 +154,7 @@ def represent_polar_coordinates(frequency, fft, phase, magnitude_scale=1.0, phas
     plt.show()
 
     return scaled_magnitude, adjusted_phase
+
 def inverse_polar_transform(magnitude, phase):
     # Convert polar coordinates back to rectangular form
     rectangular_form = np.multiply(magnitude, np.exp(1j * phase))
@@ -153,18 +163,19 @@ def inverse_polar_transform(magnitude, phase):
     inverse_PC_transform = np.fft.ifft(rectangular_form)
 
     return inverse_PC_transform
-def audio_to_image(adjusted_magnitude, adjusted_phase, magnitude_scale=1.0):
+
+def audio_to_image(magnitude, phase, magnitude_scale=1.0):
     image_size = 256
 
     # Normalize the adjusted magnitude values to be in the range [0, 255]
-    normalized_magnitude = ((adjusted_magnitude - np.min(adjusted_magnitude)) /
-                            (np.max(adjusted_magnitude) - np.min(adjusted_magnitude)) * 255).astype(np.uint8)
+    normalized_magnitude = ((magnitude - np.min(magnitude)) /
+                            (np.max(magnitude) - np.min(magnitude)) * 255).astype(np.uint8)
 
     # Resize the magnitude array to the desired size
     resized_magnitude = np.resize(normalized_magnitude, (image_size // 2, image_size))
 
     # Resize the phase array to half of the desired size
-    resized_phase = np.resize(adjusted_phase, (image_size // 2, image_size))
+    resized_phase = np.resize(phase, (image_size // 2, image_size))
 
     # Convert polar coordinates to a square image
     polar_image = resized_phase
@@ -254,7 +265,7 @@ def main():
     inverse_FT_transform = inverse_fourier_transform(fft)
 
     # Save the reconstructed audio from fourier transform as a new .wav file
-    wavfile.write('Inverse_FT.wav', sr_original, inverse_FT_transform.real)
+    # wavfile.write('Inverse_FT.wav', sr_original, inverse_FT_transform.real)
 
     # Represent Polar Coordinates (with magnitude scale and/or phase shift)
     scaled_magnitude, adjusted_phase = represent_polar_coordinates(frequency, fft, phase, magnitude_scale, phase_shift)
@@ -263,7 +274,7 @@ def main():
     inverse_PC_transform = inverse_polar_transform(magnitude, phase)
 
     # Save the reconstructed audio from polar coordinates as a new .wav file
-    wavfile.write('Inverse_PC.wav', sr_original, inverse_PC_transform.real)
+    # wavfile.write('Inverse_PC.wav', sr_original, inverse_PC_transform.real)
 
     # Convert polar coordinates to image
     audio_to_image(magnitude_db, phase+phase_shift, magnitude_scale)
@@ -272,7 +283,7 @@ def main():
     image_path = "Output_Image.png"
     reconstructed_audio = image_to_audio(image_path, sr_original)
 
-    wavfile.write('Reconstructed_Audio.wav', sr_original, reconstructed_audio)
+    # wavfile.write('Reconstructed_Audio.wav', sr_original, reconstructed_audio)
 
     represent_rec_audio = represent_fourier_transform(reconstructed_audio, sr_original)
 

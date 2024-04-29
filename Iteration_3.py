@@ -1,5 +1,7 @@
 
 # Right image, wrong sound
+# Normalized top and bot
+# Magnitude in dB in image and in signal
 
 import numpy as np
 import matplotlib.pyplot as plt

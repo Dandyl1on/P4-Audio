@@ -1,5 +1,7 @@
 
 # Wrong image (top), right sound
+# Normalized top and bot
+# Magnitude in linear scale in image and in signal
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -44,8 +46,6 @@ def plot_phase(frequency, phase):
     plt.ylabel('Phase')
     plt.tight_layout()
     plt.show()
-
-# 4	Wrong image, right sound and range
 
 def audio_to_image(magnitude, phase):
     # Convert magnitude to decibels
@@ -145,7 +145,7 @@ def main():
     plot_audio_signal(reconstructed_audio, sr, 'Reconstructed Audio Signal')
 
     # Save the reconstructed audio signal
-    wavfile.write('Image_to_Audio.wav', sr, reconstructed_audio)
+    # wavfile.write('Image_to_Audio.wav', sr, reconstructed_audio)
 
 if __name__ == "__main__":
     main()
