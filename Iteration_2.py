@@ -221,7 +221,7 @@ def main():
     phase_shift = 0.0  # Default 0.0. Use radians.
 
     # Load the audio file without specifying the target sampling rate
-    audio_file = 'GI_GMF_B3_353_20140520_n.wav'
+    audio_file = 'GI_GMF_C6_213_20140527.wav'
     y, sr_original = librosa.load(audio_file, res_type='kaiser_best')
 
     # Apply Nyquist Theorem to determine the target sampling rate
