@@ -136,7 +136,7 @@ def audio_to_image(magnitude, phase, contrast_scale, MaxMag):
 
 def image_to_audio(sr, contrast_scale, MaxMag):
 
-    image = Image.open('Magnitude Changes/40p l2 39-50.png')
+    image = Image.open('Magnitude Changes/1 pixel change/41p l2 99c.png')
     image_array = np.array(image)
     image_array = np.double(image_array)
 
