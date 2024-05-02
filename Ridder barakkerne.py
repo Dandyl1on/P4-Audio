@@ -136,7 +136,7 @@ def audio_to_image(magnitude, phase, contrast_scale, MaxMag):
 
 def image_to_audio(sr, contrast_scale, MaxMag):
 
-    image = Image.open('Magnitude Changes/Test changes/')
+    image = Image.open('Magnitude Changes/40p l2 39-50.png')
     image_array = np.array(image)
     image_array = np.double(image_array)
 
@@ -192,7 +192,7 @@ def main():
     y, sr = librosa.load(audio_path, sr=None)
 
     # Plot the audio signal
-    plot_audio_signal(y, sr, 'Original Audio Signal')
+    # plot_audio_signal(y, sr, 'Original Audio Signal')
 
     # Compute the Fourier Transform
     fft, frequency, magnitude, phase = get_fourier_transform(y, sr)
@@ -210,7 +210,7 @@ def main():
     reconstructed_audio = image_to_audio(sr, contrast_scale, MaxMag)
 
     # Plot the reconstructed audio signal
-    plot_audio_signal(reconstructed_audio, sr, 'Reconstructed Audio Signal')
+    # plot_audio_signal(reconstructed_audio, sr, 'Reconstructed Audio Signal')
 
     # Save the reconstructed audio signal
     wavfile.write('ChangeName.wav', sr, reconstructed_audio)
