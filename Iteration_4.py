@@ -48,26 +48,20 @@ def plot_phase(frequency, phase):
     plt.show()
 
 def audio_to_image(magnitude, phase):
-    # Convert magnitude to decibels
-    # magnitude = 20 * np.log10(magnitude)
 
-    # Normalize magnitude to [0, 255]
+
+
     normalized_magnitude = (magnitude - np.min(magnitude)) / (np.max(magnitude) - np.min(magnitude)) * 255
 
-    # Scale phase to [0, 255]
     normalized_phase = (phase + np.pi) / (2 * np.pi) * 255
 
-    # Reshape magnitude and phase arrays
     magnitude_image = normalized_magnitude.reshape((256, -1))[:128]  # Reshape to have 256 columns
     phase_image = normalized_phase.reshape((256, -1))[:128] # Reshape to have 256 columns
 
-    # Combine magnitude and phase images
     combined_image = np.vstack((magnitude_image, phase_image))
 
-    # Convert to PIL Image
     combined_image = Image.fromarray(combined_image.astype(np.uint8))
 
-    # Save the image (optional)
     combined_image.save('Output_Image.png')
 
     # Print debugging information
@@ -77,36 +71,26 @@ def audio_to_image(magnitude, phase):
     return combined_image
 
 def image_to_audio(image, sr):
-    # Convert image to numpy array
     image_array = np.array(image)
 
-    # Reshape the image array back to separate magnitude and phase
     magnitude_rows = image_array[:image_array.shape[0] // 2]
     phase_rows = image_array[image_array.shape[0] // 2:]
 
-    # Reshape magnitude and phase arrays
     magnitude = magnitude_rows.reshape(-1)
     phase = phase_rows.reshape(-1)
 
-    # Convert decibel values back to linear scale for magnitude
-    # magnitude = 10 ** (magnitude / 20)
 
-    # Ensure magnitude values are within a reasonable range
+
     magnitude = np.clip(magnitude, 1e-6, None)
 
-    # Scale phase back to [-π, π]
     phase = (phase / 255) * 2 * np.pi - np.pi
 
-    # Combine magnitude and phase
     fft = magnitude * np.exp(1j * phase)
 
-    # Inverse Fourier Transform
     reconstructed_audio = np.fft.ifft(fft).real
 
-    # Normalize reconstructed audio
     reconstructed_audio_normalized = reconstructed_audio / np.max(np.abs(reconstructed_audio))
 
-    # Print debugging information
     print("Reconstructed audio min:", np.min(reconstructed_audio_normalized))
     print("Reconstructed audio max:", np.max(reconstructed_audio_normalized))
 

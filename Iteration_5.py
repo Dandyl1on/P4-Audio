@@ -1,12 +1,13 @@
 
 # Right image, right sound (?)
 
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 import librosa
 from scipy.io import wavfile
 from PIL import Image
-import math
 
 def plot_audio_signal(y, sr, name):
     plt.figure(figsize=(10, 4))

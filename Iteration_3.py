@@ -1,7 +1,7 @@
 
 # Right image, wrong sound
-# Normalized top and bot
 # Magnitude in dB in image and in signal
+# Iteration 2 and 3 are combined as the official "Iteration 2"
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -48,67 +48,43 @@ def plot_phase(frequency, phase):
     plt.show()
 
 def audio_to_image(magnitude, phase):
-    # Convert magnitude to decibels
+
     magnitude_db = 20 * np.log10(magnitude)
 
-    # Normalize magnitude to [0, 255]
     normalized_magnitude = (magnitude_db - np.min(magnitude_db)) / (np.max(magnitude_db) - np.min(magnitude_db)) * 255
 
-    # Scale phase to [0, 255]
     normalized_phase = (phase + np.pi) / (2 * np.pi) * 255
 
-    # Reshape magnitude and phase arrays
     magnitude_image = normalized_magnitude.reshape((-1, 256))[:128]
     phase_image = normalized_phase.reshape((-1, 256))[:128]
 
-    # Combine magnitude and phase images
     combined_image = np.vstack((magnitude_image, phase_image))
 
-    # Convert to PIL Image
     combined_image = Image.fromarray(combined_image.astype(np.uint8))
 
-    # Save the image (optional)
     combined_image.save('Output_Image.png')
-
-    # Print debugging information
-    print("Magnitude (dB) min:", np.min(magnitude_db))
-    print("Magnitude (dB) max:", np.max(magnitude_db))
 
     return combined_image
 
-def image_to_audio(image, sr):
-    # Convert image to numpy array
+def image_to_audio(image):
+
     image_array = np.array(image)
 
-    # Reshape the image array back to separate magnitude and phase
     magnitude_rows = image_array[:image_array.shape[0] // 2]
     phase_rows = image_array[image_array.shape[0] // 2:]
 
-    # Reshape magnitude and phase arrays
     magnitude_db = magnitude_rows.reshape(-1)
     phase = phase_rows.reshape(-1)
 
-    # Convert decibel values back to linear scale for magnitude
     magnitude = 10 ** (magnitude_db / 20)
 
-    # Ensure magnitude values are within a reasonable range
-    magnitude = np.clip(magnitude, 1e-6, None)
-
-    # Scale phase back to [-π, π]
     phase = (phase / 255) * 2 * np.pi - np.pi
 
-    # Combine magnitude and phase
     fft = magnitude * np.exp(1j * phase)
 
-    # Inverse Fourier Transform
     reconstructed_audio = np.fft.ifft(fft).real
 
-    # Normalize reconstructed audio
     reconstructed_audio_normalized = reconstructed_audio / np.max(np.abs(reconstructed_audio))
-
-    # Print debugging information
-    print("Reconstructed audio min:", np.min(reconstructed_audio_normalized))
-    print("Reconstructed audio max:", np.max(reconstructed_audio_normalized))
 
     return reconstructed_audio_normalized
 
@@ -136,7 +112,7 @@ def main():
     image = audio_to_image(magnitude, phase)
 
     # Convert the image back to audio
-    reconstructed_audio = image_to_audio(image, sr)
+    reconstructed_audio = image_to_audio(image)
 
     # Plot the reconstructed audio signal
     plot_audio_signal(reconstructed_audio, sr, 'Reconstructed Audio Signal')

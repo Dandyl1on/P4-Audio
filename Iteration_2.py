@@ -1,6 +1,7 @@
 
 # Wrong image (bot), wrong sound
-# Normalized top not bot
+# dB top not normalized bot
+# Iteration 2 and 3 are combined as the official "Iteration 2"
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -8,10 +9,8 @@ import librosa
 from scipy.io import wavfile
 from scipy.signal import find_peaks
 from PIL import Image
-from scipy.signal import butter, lfilter
 
 def represent_input_signal(y, sr):
-    # Plot the original audio signal
     plt.figure(figsize=(10, 4))
     plt.plot(np.arange(len(y)) / sr, y)
     plt.title('Original Audio Signal')
@@ -167,64 +166,45 @@ def inverse_polar_transform(magnitude, phase):
 def audio_to_image(magnitude, phase, magnitude_scale=1.0):
     image_size = 256
 
-    # Normalize the adjusted magnitude values to be in the range [0, 255]
     normalized_magnitude = ((magnitude - np.min(magnitude)) /
                             (np.max(magnitude) - np.min(magnitude)) * 255).astype(np.uint8)
 
-    # Resize the magnitude array to the desired size
     resized_magnitude = np.resize(normalized_magnitude, (image_size // 2, image_size))
-
-    # Resize the phase array to half of the desired size
     resized_phase = np.resize(phase, (image_size // 2, image_size))
 
-    # Convert polar coordinates to a square image
     polar_image = resized_phase
 
-    # Convert magnitude to a square image
-    magnitude_image = resized_magnitude * magnitude_scale  # Adjust the scaling factor
+    magnitude_image = resized_magnitude * magnitude_scale
 
-    # Create a single image by stacking magnitude on top of phase
     combined_image = np.vstack((magnitude_image, polar_image))
 
-    # Resize the final image to the desired size
     combined_image = Image.fromarray(combined_image.astype(np.uint8)).resize((image_size, image_size))
 
-    # Save the combined image
     combined_image.save("Output_Image.png")
 
 def image_to_audio(image_path, sr_original):
-    # Load the image
     img = Image.open(image_path)
 
-    # Convert the image to a NumPy array
     img_array = np.array(img)
 
-    # Split the image into magnitude and polar parts
     magnitude_img = img_array[:128, :]
     polar_img = img_array[128:, :]
 
-    # Reshape and normalize the magnitude array
+    # Reshape and normalize the  array
     magnitude = magnitude_img.reshape(-1)
 
-    # Reverse the dB conversion to get raw magnitude values
     raw_magnitude = 10 ** (magnitude / 20.0)
 
-    # Retrieve the original magnitude values
     magnitude = raw_magnitude * (np.max(raw_magnitude) - np.min(raw_magnitude)) + np.min(raw_magnitude)
 
-    # Retrieve polar coordinates from the polar part of the image
     polar_coordinates = polar_img.reshape(-1)
 
-    # Rescale the polar coordinates to the range [-pi, pi]
     polar_coordinates = (polar_coordinates / 255.0) * (2 * np.pi) - np.pi
 
-    # Combine magnitude and polar coordinates into a complex array
     polar_complex = magnitude * np.exp(1j * polar_coordinates)
 
-    # Perform inverse Fourier transform
     reconstructed_audio = np.fft.ifft(polar_complex)
 
-    # Plot the reconstructed audio signal
     plt.figure(figsize=(10, 4))
     time = np.arange(len(reconstructed_audio)) / sr_original
     plt.plot(time, reconstructed_audio.real)

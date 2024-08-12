@@ -1,15 +1,15 @@
 
-# Represent and evaluate the Fourier Transform of an audio signal
+
+# Evaluate and represent Fourier Transform
+
 
 import numpy as np
 import matplotlib.pyplot as plt
+import librosa
 from scipy.io import wavfile
 
-def load_audio(file_path):
-    return wavfile.read(file_path)
-
-
 def plot_audio_signal(y, sr, name):
+
     plt.figure(figsize=(10, 4))
     plt.plot(np.arange(len(y)) / sr, y)
     plt.title(name)
@@ -18,8 +18,8 @@ def plot_audio_signal(y, sr, name):
     plt.tight_layout()
     plt.show()
 
-
 def get_fourier_transform(y, sr):
+
     fft = np.fft.fft(y)
 
     magnitude = np.abs(fft)
@@ -30,22 +30,30 @@ def get_fourier_transform(y, sr):
     return fft, frequency, magnitude
 
 def plot_fourier_transform(frequency, magnitude):
-    plt.figure(figsize=(12, 8))
+
+    plt.figure(figsize=(12, 16))
+
+    plt.subplot(2, 1, 1)
     plt.plot(frequency, magnitude)
     plt.title('Fourier Transform')
     plt.xlabel('Frequency (Hz)')
     plt.ylabel('Magnitude')
     plt.tight_layout()
+
+    plt.subplot(2, 1, 2)
+    magnitude_db = 20 * np.log10(magnitude)
+    plt.plot(frequency, magnitude_db)
+    plt.title('Fourier Transform (dB)')
+    plt.xlabel('Frequency (Hz)')
+    plt.ylabel('Magnitude (dB)')
+    plt.tight_layout()
+
     plt.show()
 
-def inverse_fourier_transform(fft_signal):
-    inverse_FT_transform = np.fft.ifft(fft_signal)
-    return inverse_FT_transform.real
-
-
 def main():
+
     audio_path = 'GI_GMF_B3_353_20140520_n.wav'
-    sr, y = load_audio(audio_path)
+    y, sr = librosa.load(audio_path, sr=None)
 
     plot_audio_signal(y, sr, 'Original Audio Signal')
 
@@ -53,11 +61,11 @@ def main():
 
     plot_fourier_transform(frequency, magnitude)
 
-    inverse_ft = inverse_fourier_transform(fft)
+    inverse_ft = np.fft.ifft(fft).real
 
     plot_audio_signal(inverse_ft, sr, 'Inverse Fourier Transform')
 
-    # wavfile.write('Inverse_FT.wav', sr, inverse_ft)
+    wavfile.write('Inverse_FT.wav', sr, inverse_ft)
 
 if __name__ == "__main__":
     main()
