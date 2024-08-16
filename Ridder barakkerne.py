@@ -3,13 +3,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import librosa
 import os
+
+from PIL.ImageFilter import Kernel
 from scipy.io import wavfile
 from PIL import Image, ImageTk
 import PIL.Image
 from tkinter import *
 from tkinter import filedialog, Label, Tk, messagebox as mb
-
 import cv2
+import pygame
 
 root = Tk()
 root.title("App prototype")
@@ -18,6 +20,8 @@ root.geometry("500x500")
 LoadImage = None
 filterImage = None
 transformed_image = None
+
+pygame.mixer.init()
 
 def select():
     mb.showinfo("Choose", "Choose a picture you want to apply filters to")
@@ -51,30 +55,35 @@ def Apply():
     global filterImage
     global CV2Image
     global transformed_image
-    
-    DisplayImage.destroy()
+    Ksize = (Slider1.get() | 1, Slider2.get() | 1)
+    sigma = Slider3.get()
 
-    CV2Image = cv2.imread(root.filename, cv2.IMREAD_UNCHANGED)
-    if CV2Image.dtype == np.uint16:
-        CV2Image = (CV2Image / 256).astype('uint8')
-    CV2Image = cv2.cvtColor(CV2Image, cv2.COLOR_BGR2RGB)
+    GausianImage = cv2.imread(root.filename, cv2.IMREAD_UNCHANGED)
+    Gaussian = cv2.GaussianBlur(GausianImage, Ksize, sigma)
+
+    if Gaussian.dtype == np.uint16:
+        Gaussian = (Gaussian / 256).astype('uint8')
+    CV2Image = cv2.cvtColor(Gaussian, cv2.COLOR_BGR2RGB)
     CV2Image = PIL.Image.fromarray(CV2Image)
     transformed_image = ImageTk.PhotoImage(CV2Image)
+
     Test = Label(ImageFrame, image=transformed_image)
+    Test.image = transformed_image
     Test.pack()
 
-    SliderValues()
-
-def SliderValues():
-    print(Slider1.get())
-    print(Slider2.get())
-    print(Slider3.get())
 
 def callback():
     if mb.askyesno("Verify", "Do you really want to Exit?"):
         mb.showwarning("Yes","Exit not yet implemented")
     else:
         mb.showinfo("No","Exit has been cancelled")
+
+def Play():
+    pygame.mixer.music.load("Image_to_Audio.wav")
+    pygame.mixer.music.play(loops=0)
+
+
+
 
 menu= Menu(root)
 root.config(menu=menu)
@@ -102,5 +111,11 @@ Btn.grid(row=0, column=1)
 
 ImageFrame = LabelFrame(OverFrame, text="This is the image", padx=5, pady=5)
 ImageFrame.grid(row=0, column=1)
+
+SoundFrame = LabelFrame(OverFrame, text="Hear the picture here", padx=5, pady=5)
+SoundFrame.grid(row=1, column=0)
+
+SoundBtn = Button(SoundFrame, text="Play Picture", command=Play)
+SoundBtn.pack()
 
 mainloop()
