@@ -16,9 +16,9 @@ import pygame
 # Creates the interface window
 root = Tk()
 root.title("App prototype")
-root.geometry("500x500")
+root.geometry("700x600")
 
-# Public variables used for images currently none so it can be filled with choosen images
+# Public variables used for images currently none, so it can be filled with choosen images
 LoadImage = None
 transformed_image = None
 
@@ -38,7 +38,7 @@ def select():
         filetypes=(("PNG files", "*.png"), ("All files", "*"))
     )
 
-    # A series of code that converts the image to a cv2 image and then into a PIL image so it can be displayed in TKinter
+    # A series of code that converts the image to a cv2 image and then into a PIL image, so it can be displayed in TKinter
     CV2Image = cv2.imread(root.filename, cv2.IMREAD_UNCHANGED)
     if CV2Image.dtype == np.uint16:
         CV2Image = (CV2Image / 256).astype('uint8')
@@ -54,12 +54,12 @@ def select():
     mb.showinfo("Sliders", "Use the sliders on the left to adjust the filter parameters")
 
 
-def Apply():
+def apply():
     # All global variables can be used in different functions
     global CV2Image
     global transformed_image
 
-    # The gaussianblur kernel size is defined by the silder1 and slider2 values. The | 1 ensures its always an odd number.
+    # The gaussianblur kernel size is defined by the silder1 and slider2 values. The | 1 ensures it's always an odd number.
     Ksize = (Slider1.get() | 1, Slider2.get() | 1)
     # Sigma is defined by slider3 values
     sigma = Slider3.get()
@@ -67,25 +67,25 @@ def Apply():
     # Applies gaussianblur to the choosen image from the select function with the values from Slider 1,2 and 3
     GausianImage = cv2.imread(root.filename, cv2.IMREAD_UNCHANGED)
     Gaussian = cv2.GaussianBlur(GausianImage, Ksize, sigma)
-    # A series of code that converts the image to a cv2 image and then into a PIL image so it can be displayed in TKinter
+    # A series of code that converts the image to a cv2 image and then into a PIL image, so it can be displayed in TKinter
     if Gaussian.dtype == np.uint16:
         Gaussian = (Gaussian / 256).astype('uint8')
     CV2Image = cv2.cvtColor(Gaussian, cv2.COLOR_BGR2RGB)
     CV2Image = PIL.Image.fromarray(CV2Image)
     transformed_image = ImageTk.PhotoImage(CV2Image)
     # Takes the now Tkinter Transformed_image and loads it into a label inside the ImageFrame
-    Test = Label(ImageFrame, image=transformed_image)
-    Test.pack()
-
+    NewImage = Label(ImageFrame, image=transformed_image)
+    NewImage.image = transformed_image
+    NewImage.pack()
 
 def callback():
     # Exit function
     if mb.askyesno("Verify", "Do you really want to Exit?"):
-        mb.showwarning("Yes","Exit not yet implemented")
+        mb.showwarning("Yes", "Exit not yet implemented")
     else:
-        mb.showinfo("No","Exit has been cancelled")
+        mb.showinfo("No", "Exit has been cancelled")
 
-def Play():
+def play():
     # Plays the sound in the load method
     pygame.mixer.music.load("Image_to_Audio.wav")
     pygame.mixer.music.play(loops=0)
@@ -104,19 +104,19 @@ OverFrame = Frame(root, pady=5, padx=5, height=500)
 OverFrame.pack()
 
 # A frame for the sliders
-SliderFrame = LabelFrame(OverFrame,text="Adjust these sliders", pady=50, padx=5, height=300)
+SliderFrame = LabelFrame(OverFrame, text="Adjust these sliders", pady=50, padx=5, height=300)
 SliderFrame.grid(row=0, column=0)
 
 # Sliders
-Slider1=Scale(SliderFrame, from_=0, to=200, orient=HORIZONTAL, troughcolor="darkgreen", background="green")
+Slider1 = Scale(SliderFrame, from_=0, to=200, orient=HORIZONTAL, troughcolor="darkgreen", background="green")
 Slider1.grid(row=0, column=0)
-Slider2=Scale(SliderFrame, from_=0, to=100, orient=HORIZONTAL, troughcolor="darkblue", background="blue")
+Slider2 = Scale(SliderFrame, from_=0, to=100, orient=HORIZONTAL, troughcolor="darkblue", background="blue")
 Slider2.grid(row=1, column=0)
-Slider3=Scale(SliderFrame, from_=0, to=50, tickinterval=15, orient=HORIZONTAL, troughcolor="darkred", background="red")
+Slider3 = Scale(SliderFrame, from_=0, to=50, tickinterval=15, orient=HORIZONTAL, troughcolor="darkred", background="red")
 Slider3.grid(row=2, column=0)
 
 # Button to call the Apply function with
-Btn = Button(SliderFrame, text="Apply filter", command=Apply)
+Btn = Button(SliderFrame, text="Apply filter", command=apply)
 Btn.grid(row=0, column=1)
 
 # Creates the ImageFrame to be inside the OverFrame
@@ -128,7 +128,7 @@ SoundFrame = LabelFrame(OverFrame, text="Hear the picture here", padx=5, pady=5)
 SoundFrame.grid(row=1, column=0)
 
 # Creates a button the call the play function
-SoundBtn = Button(SoundFrame, text="Play Picture", command=Play)
+SoundBtn = Button(SoundFrame, text="Play Picture", command=play)
 SoundBtn.pack()
 
 mainloop()
