@@ -22,11 +22,20 @@ root = Tk()
 root.title("Modifun")
 root.geometry("700x600")
 
+# None types for Image displaying
 LoadImage = None
 BandIMG = None
 PlaceImage = None
 FImage = None
 FLoad = None
+
+# None types for filter sliders
+BandpassFrame = None
+LowpassFrame = None
+HighpassFrame = None
+NotchFrame = None
+Bandbtn = None
+
 
 # Creates a sound player from pygame
 pygame.mixer.init()
@@ -91,6 +100,7 @@ def displayimage():
         PlaceImage.config(image=LoadImage)
     ImageLabel.destroy()
 
+
 def bandimage():
     global LoadImage
     global FImage
@@ -111,13 +121,126 @@ def bandimage():
         FImage.config(image=FLoad)
     FilterLabel.destroy()
 
-def Bandpass():
-    SliderFrame = LabelFrame(Overframe, text="Bandpass Filter")
-    SliderFrame.grid(row=1, column=1)
-    Slider1 = Scale(SliderFrame, from_=0, to=10, orient=HORIZONTAL)
-    Slider1.pack()
-    Slider2 = Scale(SliderFrame, from_=0, to=10, orient=HORIZONTAL)
-    Slider2.pack()
+# Filter Frames
+
+def bandpass():
+    global BandpassFrame
+    global Bandbtn
+
+    BandpassFrame = Frame(Overframe)
+    BandpassFrame.grid(row=1, column=1)
+
+    Title = Label(BandpassFrame, text="Bandpass filter", background="Light Green")
+    Title.pack(pady=5)
+
+    BandHighSlider = Scale(BandpassFrame, from_=0, to=10, orient=HORIZONTAL, length=200)
+    BandHighSlider.pack(padx=5, pady=5)
+    Label1 = Label(BandpassFrame, text="Adjust highpass")
+    Label1.pack()
+
+    BandLowSlider = Scale(BandpassFrame, from_=0, to=10, orient=HORIZONTAL, length=200)
+    BandLowSlider.pack(padx=5, pady=5)
+    Label2 = Label(BandpassFrame, text="Adjust lowpass")
+    Label2.pack()
+
+    Apply = Button(BandpassFrame, text="Apply filter", command=bandimage)
+    Apply.pack()
+
+    if LowpassFrame or HighpassFrame or NotchFrame is not None:
+        destroylowpass()
+        destroyhighpass()
+        destroynotch()
+
+def highpass():
+    global HighpassFrame
+
+    HighpassFrame = Frame(Overframe)
+    HighpassFrame.grid(row=1, column=1)
+
+    Title = Label(HighpassFrame, text="Highpass Filter", background="Light Green")
+    Title.pack(pady=5)
+
+    HighSlider = Scale(HighpassFrame, from_=0, to=10, orient=HORIZONTAL, length=200)
+    HighSlider.pack(padx=5, pady=5)
+    Label1 = Label(HighpassFrame, text="Adjust highpass")
+    Label1.pack()
+
+    Apply = Button(HighpassFrame, text="Apply filter", command=bandimage)
+    Apply.pack()
+
+    if BandpassFrame or LowpassFrame or NotchFrame is not None:
+        destroybandpass()
+        destroylowpass()
+        destroynotch()
+
+def lowpass():
+    global LowpassFrame
+
+    LowpassFrame = Frame(Overframe)
+    LowpassFrame.grid(row=1, column=1)
+
+    Title = Label(LowpassFrame, text="Lowpass filter", background="light green")
+    Title.pack(pady=5)
+
+    LowSlider = Scale(LowpassFrame, from_=0, to=10, orient=HORIZONTAL, length=200)
+    LowSlider.pack(padx=5, pady=5)
+    Label1 = Label(LowpassFrame, text="Adjust lowpass")
+    Label1.pack()
+
+    Apply = Button(LowpassFrame, text="Apply filter", command=bandimage)
+    Apply.pack()
+
+    if BandpassFrame or HighpassFrame or NotchFrame is not None:
+        destroybandpass()
+        destroyhighpass()
+        destroynotch()
+
+def notch():
+    global NotchFrame
+
+    NotchFrame = Frame(Overframe)
+    NotchFrame.grid(row=1, column=1)
+
+    Title = Label(NotchFrame, text="Notch filter", background="Light Green")
+    Title.pack(pady=5)
+
+    NotchSlider = Scale(NotchFrame, from_=0, to=10, orient=HORIZONTAL, length=200)
+    NotchSlider.pack(padx=5, pady=5)
+    Label1 = Label(NotchFrame, text="Adjust Notch")
+    Label1.pack()
+
+    Apply = Button(NotchFrame, text="Apply filter", command=bandimage)
+    Apply.pack()
+
+    if BandpassFrame or LowpassFrame or HighpassFrame is not None:
+        destroybandpass()
+        destroylowpass()
+        destroyhighpass()
+
+def destroybandpass():
+    global BandpassFrame
+    if BandpassFrame is not None:
+        BandpassFrame.destroy()
+        BandpassFrame = None
+
+def destroyhighpass():
+    global HighpassFrame
+    if HighpassFrame is not None:
+        HighpassFrame.destroy()
+        HighpassFrame = None
+
+def destroylowpass():
+    global LowpassFrame
+    if LowpassFrame is not None:
+        LowpassFrame.destroy()
+        LowpassFrame = None
+
+def destroynotch():
+    global NotchFrame
+    if NotchFrame is not None:
+        NotchFrame.destroy()
+        NotchFrame = None
+
 
 # Creates a menu in the interface, where the select function is called
 menu = Menu(root)
@@ -159,14 +282,16 @@ proglabel.pack(pady=5, padx=5)
 FilterFrame = LabelFrame(Overframe, text="Choose filters")
 FilterFrame.grid(row=1, column=0)
 
-BandBtn = Button(FilterFrame, text="Bandpass Filter", command=Bandpass)
+BandBtn = Button(FilterFrame, text="Bandpass Filter", command=bandpass)
 BandBtn.pack(pady=5, padx=5)
-NotchBtn = Button(FilterFrame, text="Notch Filter", command=bandimage)
-NotchBtn.pack(pady=5, padx=5)
-LowBtn = Button(FilterFrame, text="Lowpass Filter")
-LowBtn.pack(pady=5, padx=5)
-HighBtn = Button(FilterFrame, text="Highpass Filter")
+HighBtn = Button(FilterFrame, text="Highpass Filter", command=highpass)
 HighBtn.pack(pady=5, padx=5)
+LowBtn = Button(FilterFrame, text="Lowpass Filter", command=lowpass)
+LowBtn.pack(pady=5, padx=5)
+NotchBtn = Button(FilterFrame, text="Notch Filter", command=notch)
+NotchBtn.pack(pady=5, padx=5)
+
+
 
 # Display frame
 DisplayFrame = LabelFrame(Overframe, text="Original image without filters")
