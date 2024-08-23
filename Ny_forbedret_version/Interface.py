@@ -34,8 +34,6 @@ BandpassFrame = None
 LowpassFrame = None
 HighpassFrame = None
 NotchFrame = None
-Bandbtn = None
-
 
 # Creates a sound player from pygame
 pygame.mixer.init()
@@ -125,7 +123,10 @@ def bandimage():
 
 def bandpass():
     global BandpassFrame
-    global Bandbtn
+    global BandBtn
+    global HighBtn
+    global LowBtn
+    global NotchBtn
 
     BandpassFrame = Frame(Overframe)
     BandpassFrame.grid(row=1, column=1)
@@ -146,6 +147,11 @@ def bandpass():
     Apply = Button(BandpassFrame, text="Apply filter", command=bandimage)
     Apply.pack()
 
+    BandBtn.config(state=DISABLED)
+    HighBtn.config(state=NORMAL)
+    LowBtn.config(state=NORMAL)
+    NotchBtn.config(state=NORMAL)
+
     if LowpassFrame or HighpassFrame or NotchFrame is not None:
         destroylowpass()
         destroyhighpass()
@@ -153,6 +159,10 @@ def bandpass():
 
 def highpass():
     global HighpassFrame
+    global BandBtn
+    global HighBtn
+    global LowBtn
+    global NotchBtn
 
     HighpassFrame = Frame(Overframe)
     HighpassFrame.grid(row=1, column=1)
@@ -168,6 +178,11 @@ def highpass():
     Apply = Button(HighpassFrame, text="Apply filter", command=bandimage)
     Apply.pack()
 
+    BandBtn.config(state=NORMAL)
+    HighBtn.config(state=DISABLED)
+    LowBtn.config(state=NORMAL)
+    NotchBtn.config(state=NORMAL)
+
     if BandpassFrame or LowpassFrame or NotchFrame is not None:
         destroybandpass()
         destroylowpass()
@@ -175,6 +190,10 @@ def highpass():
 
 def lowpass():
     global LowpassFrame
+    global BandBtn
+    global HighBtn
+    global LowBtn
+    global NotchBtn
 
     LowpassFrame = Frame(Overframe)
     LowpassFrame.grid(row=1, column=1)
@@ -189,6 +208,11 @@ def lowpass():
 
     Apply = Button(LowpassFrame, text="Apply filter", command=bandimage)
     Apply.pack()
+
+    BandBtn.config(state=NORMAL)
+    HighBtn.config(state=NORMAL)
+    LowBtn.config(state=DISABLED)
+    NotchBtn.config(state=NORMAL)
 
     if BandpassFrame or HighpassFrame or NotchFrame is not None:
         destroybandpass()
@@ -211,6 +235,11 @@ def notch():
 
     Apply = Button(NotchFrame, text="Apply filter", command=bandimage)
     Apply.pack()
+
+    BandBtn.config(state=NORMAL)
+    HighBtn.config(state=NORMAL)
+    LowBtn.config(state=NORMAL)
+    NotchBtn.config(state=DISABLED)
 
     if BandpassFrame or LowpassFrame or HighpassFrame is not None:
         destroybandpass()
@@ -252,8 +281,8 @@ fileMenu.add_command(label="Open sound path", command=select)
 Overframe = Frame(root, background="black")
 Overframe.pack(fill="both", expand=True)
 
-#Empty
-EmptyLabel= Label(Overframe, width=15, height=11, background="red")
+# Empty
+EmptyLabel = Label(Overframe, width=15, height=11, background="red")
 EmptyLabel.grid(row=0, column=3)
 EmptyLabel= Label(Overframe, width=55, height=10, background="blue")
 EmptyLabel.grid(row=0, column=1)
@@ -290,8 +319,6 @@ LowBtn = Button(FilterFrame, text="Lowpass Filter", command=lowpass)
 LowBtn.pack(pady=5, padx=5)
 NotchBtn = Button(FilterFrame, text="Notch Filter", command=notch)
 NotchBtn.pack(pady=5, padx=5)
-
-
 
 # Display frame
 DisplayFrame = LabelFrame(Overframe, text="Original image without filters")
