@@ -42,6 +42,7 @@ def select():
     global Filepath
     global progressbar
     global proglabel
+    global File
 
     stop()
 
@@ -52,6 +53,8 @@ def select():
     )
     Filepath.delete(0, END)
     Filepath.insert(0, root.filename)
+
+    File = os.path.basename(root.filename)
 
     main.audio_path = root.filename
 
@@ -65,7 +68,8 @@ def select():
         time.sleep(0.1)
 
     proglabel.config(text="Loading complete!")
-
+    ImageLabel.config(text=File)
+    ImageLabel.config(height=0)
     displayimage()
 
 def play():
@@ -82,6 +86,7 @@ def stop():
 def displayimage():
     global LoadImage
     global PlaceImage
+    global File
 
     CV2Image = cv2.imread("combined_image.png", cv2.IMREAD_UNCHANGED)
     if CV2Image.dtype == np.uint16:
@@ -96,13 +101,15 @@ def displayimage():
         PlaceImage.pack()
     else:
         PlaceImage.config(image=LoadImage)
-    ImageLabel.destroy()
 
+    PlayImage.config(state=NORMAL)
+    FullImage.config(state=NORMAL)
 
 def bandimage():
     global LoadImage
     global FImage
     global FLoad
+    global CV2Image
 
     CV2Image = cv2.imread("combined_image.png", cv2.IMREAD_UNCHANGED)
     if CV2Image.dtype == np.uint16:
@@ -118,6 +125,24 @@ def bandimage():
     else:
         FImage.config(image=FLoad)
     FilterLabel.destroy()
+
+def fullimage():
+    global CV2Image
+    global FLoad
+
+    LargeImage = Toplevel(root)
+    LargeImage.title("Full Image")
+    LargeImage.geometry("750x680")
+
+    CV2Image = cv2.imread("combined_image.png", cv2.IMREAD_UNCHANGED)
+    if CV2Image.dtype == np.uint16:
+        CV2Image = (CV2Image / 256).astype('uint8')
+    CV2Image = cv2.cvtColor(CV2Image, cv2.COLOR_BGR2RGB)
+    CV2Image = PIL.Image.fromarray(CV2Image)
+
+    FLoad = ImageTk.PhotoImage(CV2Image)
+    NewImage = Label(LargeImage, image=FLoad)
+    NewImage.pack(pady=10, padx=10)
 
 # Filter Frames
 
@@ -324,16 +349,35 @@ NotchBtn.pack(pady=5, padx=5)
 DisplayFrame = LabelFrame(Overframe, text="Original image without filters")
 DisplayFrame.grid(row=1, column=4)
 
-ShowImage = Button(DisplayFrame, text="Show image", pady=5, padx=5, command=displayimage)
-ShowImage.pack(side=TOP)
+BtnFrame = Frame(DisplayFrame)
+BtnFrame.pack(side=BOTTOM)
+
+PlayImage = Button(BtnFrame, text="Play sound", pady=5, padx=15, command=play)
+PlayImage.grid(row=0, column=0)
+PlayImage.config(state=DISABLED)
+
+EmptyLabel = Label(BtnFrame, padx=20)
+EmptyLabel.grid(row=0, column=1)
+
+FullImage = Button(BtnFrame, text="Show full image", pady=5, padx=5, command=fullimage)
+FullImage.grid(row=0, column=2)
+FullImage.config(state=DISABLED)
 
 ImageLabel = Label(DisplayFrame, text="Your image will be displayed here", width=42, height=20)
-ImageLabel.pack()
+ImageLabel.pack(side=TOP)
 
-FilteredImage = LabelFrame(Overframe, text="Image with choosen filter applied") # use widht and height later
+# Small Images
+SmallImages = LabelFrame(Overframe, text="Here is the tiny images")
+SmallImages.grid(row=2, column=4)
+
+test = Label(SmallImages, text="Test")
+test.pack()
+
+# Middle display frame
+FilteredImage = LabelFrame(Overframe, text="Image with choosen filter applied", width=600, height=500)  # use widht and height later
 FilteredImage.grid(row=1, column=2)
 
-FilterLabel = Label(FilteredImage, text="Your image will be displayed here")
+FilterLabel = Label(FilteredImage, text="Your image will be displayed here", width=78, height=32)
 FilterLabel.pack()
 
 mainloop()
