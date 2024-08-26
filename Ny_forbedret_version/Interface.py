@@ -18,6 +18,9 @@ from fileinput import filename
 from tkinter import *
 from tkinter import filedialog, Label, Tk, messagebox as mb, ttk
 
+Placement = 0
+photo_image_references = []
+
 root = Tk()
 root.title("Modifun")
 root.geometry("700x600")
@@ -98,7 +101,7 @@ def displayimage():
     LoadImage = ImageTk.PhotoImage(Resize)
 
     if PlaceImage is None:
-        PlaceImage = Label(DisplayFrame, image=LoadImage)
+        PlaceImage = Label(UnderFrame, image=LoadImage)
         PlaceImage.pack()
     else:
         PlaceImage.config(image=LoadImage)
@@ -153,12 +156,23 @@ def saveimage():
     global LoadImage
     global CV2Image
     global SImage
+    global SmallImageLoad
+    global File
+    global Placement
+
+    SImage = Label(scrollframe)
+    SImage.grid(row=Placement, column=0)
+
+    text = Label(scrollframe, text=File, padx=10, pady=5, width=15)
+    text.grid(row=Placement, column=1)
 
     Size = CV2Image.resize((50, 50), PIL.Image.LANCZOS)
-    LoadImage = ImageTk.PhotoImage(Size)
+    SmallImageLoad = ImageTk.PhotoImage(Size)
 
+    photo_image_references.append(SmallImageLoad)
 
-    SImage.config(image=LoadImage)
+    SImage.config(image=SmallImageLoad)
+    Placement +=1
 
 
 # Filter Frames
@@ -368,11 +382,19 @@ NotchBtn.pack(pady=5, padx=5)
 NotchBtn.config(state=DISABLED)
 
 # Display frame
-DisplayFrame = LabelFrame(Overframe, text="Original image without filters")
+DisplayFrame = LabelFrame(Overframe, text="Preview", pady=5, padx=5)
 DisplayFrame.grid(row=1, column=4)
 
-BtnFrame = Frame(DisplayFrame)
+UnderFrame = Frame(DisplayFrame)
+UnderFrame.pack()
+
+BtnFrame = Frame(UnderFrame, pady=5, padx=5)
 BtnFrame.pack(side=BOTTOM)
+F = Frame(DisplayFrame, pady=5, padx=5)
+F.pack(side=BOTTOM)
+
+ImageLabel = Label(UnderFrame, text="Your image will be displayed here", width=42, height=24)
+ImageLabel.pack(side=TOP)
 
 PlayImage = Button(BtnFrame, text="Play sound", pady=5, padx=15, command=play)
 PlayImage.grid(row=0, column=0)
@@ -380,17 +402,16 @@ PlayImage.config(state=DISABLED)
 
 SaveImage = Button(BtnFrame, text="Save Image", padx=5, pady=5, command=saveimage)
 SaveImage.grid(row=0, column=1)
+
 # SaveImage.config(state=DISABLED)
 
 FullImage = Button(BtnFrame, text="Show full image", pady=5, padx=5, command=fullimage)
 FullImage.grid(row=0, column=2)
 FullImage.config(state=DISABLED)
 
-ImageLabel = Label(DisplayFrame, text="Your image will be displayed here", width=42, height=20)
-ImageLabel.pack(side=TOP)
 
 # Small Images
-SmallImages = LabelFrame(Overframe, text="Here is the tiny images")
+SmallImages = LabelFrame(F, text="Instances")
 SmallImages.grid(row=2, column=4)
 
 canvas = Canvas(SmallImages, height=70, width=260)
@@ -408,12 +429,6 @@ def on_frame_configure(event):
     canvas.configure(scrollregion=canvas.bbox("all"))
 
 scrollframe.bind("<Configure>", on_frame_configure)
-
-SImage = Label(scrollframe, text="Image", padx=10, pady=5)
-SImage.grid(row=0, column=0)
-
-text = Label(scrollframe, text="Original", padx=10, pady=5, width=15)
-text.grid(row=0, column=1)
 
 SImage2 = Label(scrollframe, text="", padx=10, pady=5, width=15)
 SImage2.grid(row=1, column=0)
@@ -437,7 +452,7 @@ SmallImages.grid_rowconfigure(0, weight=1)
 SmallImages.grid_columnconfigure(0, weight=1)
 
 # Middle display frame
-FilteredImage = LabelFrame(Overframe, text="Image with choosen filter applied", width=600, height=500)  # use widht and height later
+FilteredImage = LabelFrame(Overframe, text="Image with choosen filter applied", width=600, height=500)
 FilteredImage.grid(row=1, column=2)
 
 FilterLabel = Label(FilteredImage, text="Your image will be displayed here", width=78, height=32)
