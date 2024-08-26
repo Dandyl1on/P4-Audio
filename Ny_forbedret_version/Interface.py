@@ -87,13 +87,14 @@ def displayimage():
     global LoadImage
     global PlaceImage
     global File
+    global CV2Image
 
     CV2Image = cv2.imread("combined_image.png", cv2.IMREAD_UNCHANGED)
     if CV2Image.dtype == np.uint16:
         CV2Image = (CV2Image / 256).astype('uint8')
     CV2Image = cv2.cvtColor(CV2Image, cv2.COLOR_BGR2RGB)
     CV2Image = PIL.Image.fromarray(CV2Image)
-    Resize = CV2Image.resize((300,300), PIL.Image.LANCZOS)
+    Resize = CV2Image.resize((300, 300), PIL.Image.LANCZOS)
     LoadImage = ImageTk.PhotoImage(Resize)
 
     if PlaceImage is None:
@@ -104,6 +105,10 @@ def displayimage():
 
     PlayImage.config(state=NORMAL)
     FullImage.config(state=NORMAL)
+    BandBtn.config(state=NORMAL)
+    HighBtn.config(state=NORMAL)
+    LowBtn.config(state=NORMAL)
+    NotchBtn.config(state=NORMAL)
 
 def bandimage():
     global LoadImage
@@ -116,8 +121,8 @@ def bandimage():
         CV2Image = (CV2Image / 256).astype('uint8')
     CV2Image = cv2.cvtColor(CV2Image, cv2.COLOR_BGR2RGB)
     CV2Image = PIL.Image.fromarray(CV2Image)
-    #Resize = CV2Image.resize((500, 500), PIL.Image.LANCZOS)
-    FLoad = ImageTk.PhotoImage(CV2Image)
+    Resize = CV2Image.resize((550, 490), PIL.Image.LANCZOS)
+    FLoad = ImageTk.PhotoImage(Resize)
 
     if FImage is None:
         FImage = Label(FilteredImage, image=FLoad)
@@ -143,6 +148,18 @@ def fullimage():
     FLoad = ImageTk.PhotoImage(CV2Image)
     NewImage = Label(LargeImage, image=FLoad)
     NewImage.pack(pady=10, padx=10)
+
+def saveimage():
+    global LoadImage
+    global CV2Image
+    global SImage
+
+    Size = CV2Image.resize((50, 50), PIL.Image.LANCZOS)
+    LoadImage = ImageTk.PhotoImage(Size)
+
+
+    SImage.config(image=LoadImage)
+
 
 # Filter Frames
 
@@ -302,6 +319,7 @@ root.config(menu=menu)
 fileMenu = Menu(menu)
 menu.add_cascade(label="File", menu=fileMenu)
 fileMenu.add_command(label="Open sound path", command=select)
+fileMenu.add_command(label="Show full image", command=fullimage)
 
 Overframe = Frame(root, background="black")
 Overframe.pack(fill="both", expand=True)
@@ -309,11 +327,11 @@ Overframe.pack(fill="both", expand=True)
 # Empty
 EmptyLabel = Label(Overframe, width=15, height=11, background="red")
 EmptyLabel.grid(row=0, column=3)
-EmptyLabel= Label(Overframe, width=55, height=10, background="blue")
+EmptyLabel = Label(Overframe, width=55, height=10, background="blue")
 EmptyLabel.grid(row=0, column=1)
-EmptyLabel= Label(Overframe, width=20, height=10, background="green")
+EmptyLabel = Label(Overframe, width=20, height=10, background="green")
 EmptyLabel.grid(row=0, column=0)
-EmptyLabel= Label(Overframe, width=20, height=10, background="red")
+EmptyLabel = Label(Overframe, width=20, height=10, background="red")
 EmptyLabel.grid(row=0, column=4)
 
 # Entry frame
@@ -338,12 +356,16 @@ FilterFrame.grid(row=1, column=0)
 
 BandBtn = Button(FilterFrame, text="Bandpass Filter", command=bandpass)
 BandBtn.pack(pady=5, padx=5)
+BandBtn.config(state=DISABLED)
 HighBtn = Button(FilterFrame, text="Highpass Filter", command=highpass)
 HighBtn.pack(pady=5, padx=5)
+HighBtn.config(state=DISABLED)
 LowBtn = Button(FilterFrame, text="Lowpass Filter", command=lowpass)
 LowBtn.pack(pady=5, padx=5)
+LowBtn.config(state=DISABLED)
 NotchBtn = Button(FilterFrame, text="Notch Filter", command=notch)
 NotchBtn.pack(pady=5, padx=5)
+NotchBtn.config(state=DISABLED)
 
 # Display frame
 DisplayFrame = LabelFrame(Overframe, text="Original image without filters")
@@ -356,8 +378,9 @@ PlayImage = Button(BtnFrame, text="Play sound", pady=5, padx=15, command=play)
 PlayImage.grid(row=0, column=0)
 PlayImage.config(state=DISABLED)
 
-EmptyLabel = Label(BtnFrame, padx=20)
-EmptyLabel.grid(row=0, column=1)
+SaveImage = Button(BtnFrame, text="Save Image", padx=5, pady=5, command=saveimage)
+SaveImage.grid(row=0, column=1)
+# SaveImage.config(state=DISABLED)
 
 FullImage = Button(BtnFrame, text="Show full image", pady=5, padx=5, command=fullimage)
 FullImage.grid(row=0, column=2)
@@ -370,8 +393,48 @@ ImageLabel.pack(side=TOP)
 SmallImages = LabelFrame(Overframe, text="Here is the tiny images")
 SmallImages.grid(row=2, column=4)
 
-test = Label(SmallImages, text="Test")
-test.pack()
+canvas = Canvas(SmallImages, height=70, width=260)
+canvas.grid(row=0, column=0, sticky="nsew")
+
+scroll = Scrollbar(SmallImages, command=canvas.yview)
+scroll.grid(row=0, column=1, sticky="ns")
+
+scrollframe = Frame(canvas, pady=5, padx=5)
+
+canvas.create_window((0, 0), window=scrollframe, anchor="nw")
+canvas.configure(yscrollcommand=scroll.set)
+
+def on_frame_configure(event):
+    canvas.configure(scrollregion=canvas.bbox("all"))
+
+scrollframe.bind("<Configure>", on_frame_configure)
+
+SImage = Label(scrollframe, text="Image", padx=10, pady=5)
+SImage.grid(row=0, column=0)
+
+text = Label(scrollframe, text="Original", padx=10, pady=5, width=15)
+text.grid(row=0, column=1)
+
+SImage2 = Label(scrollframe, text="", padx=10, pady=5, width=15)
+SImage2.grid(row=1, column=0)
+
+text2 = Label(scrollframe, text="", padx=10, pady=5, width=15)
+text2.grid(row=1, column=1)
+
+SImage3 = Label(scrollframe, text="", padx=10, pady=5, width=15)
+SImage3.grid(row=2, column=0)
+
+text3 = Label(scrollframe, text="", padx=10, pady=5, width=15)
+text3.grid(row=2, column=1)
+
+SImage4 = Label(scrollframe, text="peekaboo", padx=10, pady=5, width=15)
+SImage4.grid(row=3, column=0)
+
+text4 = Label(scrollframe, text="", padx=10, pady=5, width=15)
+text4.grid(row=3, column=1)
+
+SmallImages.grid_rowconfigure(0, weight=1)
+SmallImages.grid_columnconfigure(0, weight=1)
 
 # Middle display frame
 FilteredImage = LabelFrame(Overframe, text="Image with choosen filter applied", width=600, height=500)  # use widht and height later
