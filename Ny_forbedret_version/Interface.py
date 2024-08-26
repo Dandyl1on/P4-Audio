@@ -177,6 +177,8 @@ def saveimage():
 
 # Filter Frames
 
+
+
 def bandpass():
     global BandpassFrame
     global BandBtn
@@ -184,11 +186,8 @@ def bandpass():
     global LowBtn
     global NotchBtn
 
-    BandpassFrame = Frame(Overframe)
-    BandpassFrame.grid(row=1, column=1)
-
-    Title = Label(BandpassFrame, text="Bandpass filter", background="Light Green")
-    Title.pack(pady=5)
+    BandpassFrame = LabelFrame(FilterFrame, text="Bandpass", font="BOLD")
+    BandpassFrame.pack()
 
     BandHighSlider = Scale(BandpassFrame, from_=0, to=10, orient=HORIZONTAL, length=200)
     BandHighSlider.pack(padx=5, pady=5)
@@ -208,6 +207,8 @@ def bandpass():
     LowBtn.config(state=NORMAL)
     NotchBtn.config(state=NORMAL)
 
+    L.destroy()
+
     if LowpassFrame or HighpassFrame or NotchFrame is not None:
         destroylowpass()
         destroyhighpass()
@@ -220,11 +221,8 @@ def highpass():
     global LowBtn
     global NotchBtn
 
-    HighpassFrame = Frame(Overframe)
-    HighpassFrame.grid(row=1, column=1)
-
-    Title = Label(HighpassFrame, text="Highpass Filter", background="Light Green")
-    Title.pack(pady=5)
+    HighpassFrame = LabelFrame(FilterFrame, text="Highpass", font="bold")
+    HighpassFrame.pack()
 
     HighSlider = Scale(HighpassFrame, from_=0, to=10, orient=HORIZONTAL, length=200)
     HighSlider.pack(padx=5, pady=5)
@@ -238,6 +236,8 @@ def highpass():
     HighBtn.config(state=DISABLED)
     LowBtn.config(state=NORMAL)
     NotchBtn.config(state=NORMAL)
+    L.destroy()
+
 
     if BandpassFrame or LowpassFrame or NotchFrame is not None:
         destroybandpass()
@@ -251,11 +251,8 @@ def lowpass():
     global LowBtn
     global NotchBtn
 
-    LowpassFrame = Frame(Overframe)
-    LowpassFrame.grid(row=1, column=1)
-
-    Title = Label(LowpassFrame, text="Lowpass filter", background="light green")
-    Title.pack(pady=5)
+    LowpassFrame = LabelFrame(FilterFrame, text="Lowpass", font="Bold")
+    LowpassFrame.pack()
 
     LowSlider = Scale(LowpassFrame, from_=0, to=10, orient=HORIZONTAL, length=200)
     LowSlider.pack(padx=5, pady=5)
@@ -270,6 +267,9 @@ def lowpass():
     LowBtn.config(state=DISABLED)
     NotchBtn.config(state=NORMAL)
 
+    L.destroy()
+
+
     if BandpassFrame or HighpassFrame or NotchFrame is not None:
         destroybandpass()
         destroyhighpass()
@@ -278,11 +278,8 @@ def lowpass():
 def notch():
     global NotchFrame
 
-    NotchFrame = Frame(Overframe)
-    NotchFrame.grid(row=1, column=1)
-
-    Title = Label(NotchFrame, text="Notch filter", background="Light Green")
-    Title.pack(pady=5)
+    NotchFrame = LabelFrame(FilterFrame, text="Notch", font="Bold")
+    NotchFrame.pack()
 
     NotchSlider = Scale(NotchFrame, from_=0, to=10, orient=HORIZONTAL, length=200)
     NotchSlider.pack(padx=5, pady=5)
@@ -296,6 +293,8 @@ def notch():
     HighBtn.config(state=NORMAL)
     LowBtn.config(state=NORMAL)
     NotchBtn.config(state=DISABLED)
+
+    L.destroy()
 
     if BandpassFrame or LowpassFrame or HighpassFrame is not None:
         destroybandpass()
@@ -335,17 +334,17 @@ menu.add_cascade(label="File", menu=fileMenu)
 fileMenu.add_command(label="Open sound path", command=select)
 fileMenu.add_command(label="Show full image", command=fullimage)
 
-Overframe = Frame(root, background="black")
+Overframe = Frame(root, background="grey35")
 Overframe.pack(fill="both", expand=True)
 
 # Empty
-EmptyLabel = Label(Overframe, width=15, height=11, background="red")
+EmptyLabel = Label(Overframe, width=15, height=11, background="grey35")
 EmptyLabel.grid(row=0, column=3)
-EmptyLabel = Label(Overframe, width=55, height=10, background="blue")
+EmptyLabel = Label(Overframe, width=55, height=10, background="grey35")
 EmptyLabel.grid(row=0, column=1)
-EmptyLabel = Label(Overframe, width=20, height=10, background="green")
+EmptyLabel = Label(Overframe, width=20, height=10, background="grey35")
 EmptyLabel.grid(row=0, column=0)
-EmptyLabel = Label(Overframe, width=20, height=10, background="red")
+EmptyLabel = Label(Overframe, width=20, height=10, background="grey35")
 EmptyLabel.grid(row=0, column=4)
 
 # Entry frame
@@ -366,20 +365,26 @@ proglabel.pack(pady=5, padx=5)
 
 # Filter frame
 FilterFrame = LabelFrame(Overframe, text="Choose filters")
-FilterFrame.grid(row=1, column=0)
+FilterFrame.grid(row=1, column=1)
 
-BandBtn = Button(FilterFrame, text="Bandpass Filter", command=bandpass)
-BandBtn.pack(pady=5, padx=5)
-BandBtn.config(state=DISABLED)
-HighBtn = Button(FilterFrame, text="Highpass Filter", command=highpass)
-HighBtn.pack(pady=5, padx=5)
-HighBtn.config(state=DISABLED)
-LowBtn = Button(FilterFrame, text="Lowpass Filter", command=lowpass)
-LowBtn.pack(pady=5, padx=5)
-LowBtn.config(state=DISABLED)
-NotchBtn = Button(FilterFrame, text="Notch Filter", command=notch)
-NotchBtn.pack(pady=5, padx=5)
-NotchBtn.config(state=DISABLED)
+L = Label(FilterFrame, text="", width=31, height=10)
+L.pack(side=TOP)
+
+BtnFrame = Frame(FilterFrame, pady=5)
+BtnFrame.pack(side=BOTTOM)
+
+BandBtn = Button(BtnFrame, text="Bandpass Filter", command=bandpass)
+BandBtn.grid(row=0, column=0)
+# BandBtn.config(state=DISABLED)
+HighBtn = Button(BtnFrame, text="Highpass Filter", command=highpass)
+HighBtn.grid(row=0, column=1)
+# HighBtn.config(state=DISABLED)
+LowBtn = Button(BtnFrame, text="Lowpass Filter", command=lowpass)
+LowBtn.grid(row=0, column=2)
+# LowBtn.config(state=DISABLED)
+NotchBtn = Button(BtnFrame, text="Notch Filter", command=notch)
+NotchBtn.grid(row=0, column=3)
+# NotchBtn.config(state=DISABLED)
 
 # Display frame
 DisplayFrame = LabelFrame(Overframe, text="Preview", pady=5, padx=5)
