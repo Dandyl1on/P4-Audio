@@ -2,7 +2,9 @@ import numpy as np
 import librosa
 from PIL import Image
 import soundfile as sf
-from main import magnitude_db_max, magnitude_db_min, sr, D
+from main import mainfunc
+
+magnitude_db_max, magnitude_db_min, sr, D = mainfunc()
 
 def reshape_to_custom(array, column_length):
     """ Reshape the array to have a fixed number of columns and calculate rows accordingly. """
@@ -87,14 +89,19 @@ def process_and_save_filtered_image(filter_type, cutoff_freqs, output_filename):
     print(f"Reconstructed audio with {filter_type} filter saved.")
 
 # Parameters
-sr = 22050  # Sample rate
-low_freq = 100  # Low cutoff frequency in Hz
-high_freq = 500  # High cutoff frequency in Hz
+sr = 22050
+low_freq = 10000  # Low cutoff frequency in Hz
+high_freq = 13000  # High cutoff frequency in Hz
 notch_freq = 12000  # Notch frequency in Hz
-bandwidth = 300 # Bandwidth of the notch filter in Hz
+bandwidth = 100  # Bandwidth of the notch filter in Hz
 
-# Apply filters and save results
-process_and_save_filtered_image('bandpass', (low_freq, high_freq), 'filtered_combined_image_bandpass.png')
-process_and_save_filtered_image('lowpass', (high_freq,), 'filtered_combined_image_lowpass.png')
-process_and_save_filtered_image('highpass', (low_freq,), 'filtered_combined_image_highpass.png')
-process_and_save_filtered_image('notch', (notch_freq, bandwidth), 'filtered_combined_image_notch.png')
+def ApplyFilters():
+
+    print(high_freq)
+    print(low_freq)
+
+    # Apply filters and save results
+    process_and_save_filtered_image('bandpass', (low_freq, high_freq), 'filtered_combined_image_bandpass.png')
+    process_and_save_filtered_image('lowpass', (high_freq,), 'filtered_combined_image_lowpass.png')
+    process_and_save_filtered_image('highpass', (low_freq,), 'filtered_combined_image_highpass.png')
+    process_and_save_filtered_image('notch', (notch_freq, bandwidth), 'filtered_combined_image_notch.png')

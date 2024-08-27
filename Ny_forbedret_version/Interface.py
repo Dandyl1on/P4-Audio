@@ -7,9 +7,12 @@ import PIL.Image
 import cv2
 import pygame
 import time
-import main
-from main import *
+import Equalloudness_transformation
+from Equalloudness_transformation import *
+import soundfile as sf
 
+import all_filters
+from all_filters import ApplyFilters
 
 from PIL.ImageFilter import Kernel
 from scipy.io import wavfile
@@ -24,6 +27,10 @@ photo_image_references = []
 root = Tk()
 root.title("Modifun")
 root.geometry("700x600")
+
+BandLowSlider = None
+BandHighSlider = None
+NotchSlider = None
 
 # None types for Image displaying
 LoadImage = None
@@ -59,10 +66,10 @@ def select():
 
     File = os.path.basename(root.filename)
 
-    main.audio_path = root.filename
+    Equalloudness_transformation.audio_path = root.filename
 
-    print(main.audio_path)
-    main.mainfunc()
+    print(Equalloudness_transformation.audio_path)
+    Equalloudness_transformation.mainfunc()
 
     while progressbar['value'] < 100:
         progressbar['value'] += 20
@@ -118,8 +125,14 @@ def bandimage():
     global FImage
     global FLoad
     global CV2Image
+    global sr
 
-    CV2Image = cv2.imread("combined_image.png", cv2.IMREAD_UNCHANGED)
+    all_filters.high_freq = BandHighSlider.get()
+    all_filters.low_freq = BandLowSlider.get()
+
+    ApplyFilters()
+
+    CV2Image = cv2.imread("filtered_combined_image_bandpass.png", cv2.IMREAD_UNCHANGED)
     if CV2Image.dtype == np.uint16:
         CV2Image = (CV2Image / 256).astype('uint8')
     CV2Image = cv2.cvtColor(CV2Image, cv2.COLOR_BGR2RGB)
@@ -133,6 +146,12 @@ def bandimage():
     else:
         FImage.config(image=FLoad)
     FilterLabel.destroy()
+
+
+
+
+def getsr():
+    return sr
 
 def fullimage():
     global CV2Image
@@ -174,27 +193,24 @@ def saveimage():
     SImage.config(image=SmallImageLoad)
     Placement +=1
 
-
-# Filter Frames
-
-
-
 def bandpass():
     global BandpassFrame
     global BandBtn
     global HighBtn
     global LowBtn
     global NotchBtn
+    global BandHighSlider
+    global BandLowSlider
 
     BandpassFrame = LabelFrame(FilterFrame, text="Bandpass", font="BOLD")
     BandpassFrame.pack()
 
-    BandHighSlider = Scale(BandpassFrame, from_=0, to=10, orient=HORIZONTAL, length=200)
+    BandHighSlider = Scale(BandpassFrame, from_=0, to=22050, orient=HORIZONTAL, length=200)
     BandHighSlider.pack(padx=5, pady=5)
     Label1 = Label(BandpassFrame, text="Adjust highpass")
     Label1.pack()
 
-    BandLowSlider = Scale(BandpassFrame, from_=0, to=10, orient=HORIZONTAL, length=200)
+    BandLowSlider = Scale(BandpassFrame, from_=0, to=22050, orient=HORIZONTAL, length=200)
     BandLowSlider.pack(padx=5, pady=5)
     Label2 = Label(BandpassFrame, text="Adjust lowpass")
     Label2.pack()
@@ -220,6 +236,7 @@ def highpass():
     global HighBtn
     global LowBtn
     global NotchBtn
+    global HighSlider
 
     HighpassFrame = LabelFrame(FilterFrame, text="Highpass", font="bold")
     HighpassFrame.pack()
@@ -250,6 +267,7 @@ def lowpass():
     global HighBtn
     global LowBtn
     global NotchBtn
+    global LowSlider
 
     LowpassFrame = LabelFrame(FilterFrame, text="Lowpass", font="Bold")
     LowpassFrame.pack()
@@ -269,7 +287,6 @@ def lowpass():
 
     L.destroy()
 
-
     if BandpassFrame or HighpassFrame or NotchFrame is not None:
         destroybandpass()
         destroyhighpass()
@@ -277,8 +294,9 @@ def lowpass():
 
 def notch():
     global NotchFrame
+    global NotchSlider
 
-    NotchFrame = LabelFrame(FilterFrame, text="Notch", font="Bold")
+    NotchFrame = LabelFrame(FilterFrame, text="Notch", font="bold")
     NotchFrame.pack()
 
     NotchSlider = Scale(NotchFrame, from_=0, to=10, orient=HORIZONTAL, length=200)
@@ -325,7 +343,6 @@ def destroynotch():
         NotchFrame.destroy()
         NotchFrame = None
 
-
 # Creates a menu in the interface, where the select function is called
 menu = Menu(root)
 root.config(menu=menu)
@@ -337,19 +354,17 @@ fileMenu.add_command(label="Show full image", command=fullimage)
 Overframe = Frame(root, background="grey35")
 Overframe.pack(fill="both", expand=True)
 
-# Empty
-EmptyLabel = Label(Overframe, width=15, height=11, background="grey35")
-EmptyLabel.grid(row=0, column=3)
-EmptyLabel = Label(Overframe, width=55, height=10, background="grey35")
-EmptyLabel.grid(row=0, column=1)
-EmptyLabel = Label(Overframe, width=20, height=10, background="grey35")
-EmptyLabel.grid(row=0, column=0)
-EmptyLabel = Label(Overframe, width=20, height=10, background="grey35")
+# Empty used for layout mangement
+EmptyLabel = Label(Overframe, width=10, height=11, background="grey35")
 EmptyLabel.grid(row=0, column=4)
+EmptyLabel = Label(Overframe, width=3, height=10, background="grey35")
+EmptyLabel.grid(row=0, column=0)
+EmptyLabel = Label(Overframe, width=9, height=11, background="grey35")
+EmptyLabel.grid(row=0, column=2)
 
 # Entry frame
 EntryFrame = LabelFrame(Overframe, text="Your sounds path directory")
-EntryFrame.grid(row=0, column=2)
+EntryFrame.grid(row=0, column=3)
 
 Playsound = Button(EntryFrame, text="Play sound", command=play)
 Playsound.pack(pady=5, padx=5)
@@ -364,7 +379,7 @@ proglabel = Label(EntryFrame, text="Waiting for sound clip")
 proglabel.pack(pady=5, padx=5)
 
 # Filter frame
-FilterFrame = LabelFrame(Overframe, text="Choose filters")
+FilterFrame = LabelFrame(Overframe, text="Choose filters", padx=5, pady=5)
 FilterFrame.grid(row=1, column=1)
 
 L = Label(FilterFrame, text="", width=31, height=10)
@@ -374,21 +389,21 @@ BtnFrame = Frame(FilterFrame, pady=5)
 BtnFrame.pack(side=BOTTOM)
 
 BandBtn = Button(BtnFrame, text="Bandpass Filter", command=bandpass)
-BandBtn.grid(row=0, column=0)
-# BandBtn.config(state=DISABLED)
+BandBtn.grid(row=0, column=0, padx=5)
+BandBtn.config(state=DISABLED)
 HighBtn = Button(BtnFrame, text="Highpass Filter", command=highpass)
-HighBtn.grid(row=0, column=1)
-# HighBtn.config(state=DISABLED)
+HighBtn.grid(row=0, column=1, padx=5)
+HighBtn.config(state=DISABLED)
 LowBtn = Button(BtnFrame, text="Lowpass Filter", command=lowpass)
-LowBtn.grid(row=0, column=2)
-# LowBtn.config(state=DISABLED)
+LowBtn.grid(row=0, column=2, padx=5)
+LowBtn.config(state=DISABLED)
 NotchBtn = Button(BtnFrame, text="Notch Filter", command=notch)
-NotchBtn.grid(row=0, column=3)
-# NotchBtn.config(state=DISABLED)
+NotchBtn.grid(row=0, column=3, padx=5)
+NotchBtn.config(state=DISABLED)
 
 # Display frame
 DisplayFrame = LabelFrame(Overframe, text="Preview", pady=5, padx=5)
-DisplayFrame.grid(row=1, column=4)
+DisplayFrame.grid(row=1, column=5)
 
 UnderFrame = Frame(DisplayFrame)
 UnderFrame.pack()
@@ -458,7 +473,7 @@ SmallImages.grid_columnconfigure(0, weight=1)
 
 # Middle display frame
 FilteredImage = LabelFrame(Overframe, text="Image with choosen filter applied", width=600, height=500)
-FilteredImage.grid(row=1, column=2)
+FilteredImage.grid(row=1, column=3)
 
 FilterLabel = Label(FilteredImage, text="Your image will be displayed here", width=78, height=32)
 FilterLabel.pack()
