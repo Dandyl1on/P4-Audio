@@ -88,10 +88,10 @@ def process_and_save_filtered_image(filter_type, cutoff_freqs, output_filename):
 
 # Parameters
 sr = 22050  # Sample rate
-low_freq = 10000  # Low cutoff frequency in Hz
-high_freq = 13000  # High cutoff frequency in Hz
+low_freq = 100  # Low cutoff frequency in Hz
+high_freq = 500  # High cutoff frequency in Hz
 notch_freq = 12000  # Notch frequency in Hz
-bandwidth = 100 # Bandwidth of the notch filter in Hz
+bandwidth = 300 # Bandwidth of the notch filter in Hz
 
 # Apply filters and save results
 process_and_save_filtered_image('bandpass', (low_freq, high_freq), 'filtered_combined_image_bandpass.png')
