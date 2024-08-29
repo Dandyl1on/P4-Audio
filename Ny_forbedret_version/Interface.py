@@ -12,6 +12,7 @@ from Equalloudness_transformation import *
 import soundfile as sf
 
 import all_filters
+from PIL.ImageOps import scale
 from all_filters import ApplyFilters
 
 from PIL.ImageFilter import Kernel
@@ -41,9 +42,8 @@ FLoad = None
 
 # None types for filter sliders
 BandpassFrame = None
-LowpassFrame = None
-HighpassFrame = None
 NotchFrame = None
+EqualFrame = None
 
 # Creates a sound player from pygame
 pygame.mixer.init()
@@ -116,8 +116,6 @@ def displayimage():
     PlayImage.config(state=NORMAL)
     FullImage.config(state=NORMAL)
     BandBtn.config(state=NORMAL)
-    HighBtn.config(state=NORMAL)
-    LowBtn.config(state=NORMAL)
     NotchBtn.config(state=NORMAL)
 
 def bandimage():
@@ -147,8 +145,32 @@ def bandimage():
         FImage.config(image=FLoad)
     FilterLabel.destroy()
 
+def notchimage():
+    global LoadImage
+    global FImage
+    global FLoad
+    global CV2Image
+    global sr
 
+    all_filters.notch_freq = NotchSlider.get()
+    all_filters.bandwidth = BandwidthSlider.get()
 
+    ApplyFilters()
+
+    CV2Image = cv2.imread("filtered_combined_image_notch.png", cv2.IMREAD_UNCHANGED)
+    if CV2Image.dtype == np.uint16:
+        CV2Image = (CV2Image / 256).astype('uint8')
+    CV2Image = cv2.cvtColor(CV2Image, cv2.COLOR_BGR2RGB)
+    CV2Image = PIL.Image.fromarray(CV2Image)
+    Resize = CV2Image.resize((550, 490), PIL.Image.LANCZOS)
+    FLoad = ImageTk.PhotoImage(Resize)
+
+    if FImage is None:
+        FImage = Label(FilteredImage, image=FLoad)
+        FImage.pack()
+    else:
+        FImage.config(image=FLoad)
+    FilterLabel.destroy()
 
 def getsr():
     return sr
@@ -219,105 +241,82 @@ def bandpass():
     Apply.pack()
 
     BandBtn.config(state=DISABLED)
-    HighBtn.config(state=NORMAL)
-    LowBtn.config(state=NORMAL)
     NotchBtn.config(state=NORMAL)
+    EqualBtn.config(state=NORMAL)
+
 
     L.destroy()
 
-    if LowpassFrame or HighpassFrame or NotchFrame is not None:
-        destroylowpass()
-        destroyhighpass()
+    if EqualFrame or NotchFrame is not None:
         destroynotch()
-
-def highpass():
-    global HighpassFrame
-    global BandBtn
-    global HighBtn
-    global LowBtn
-    global NotchBtn
-    global HighSlider
-
-    HighpassFrame = LabelFrame(FilterFrame, text="Highpass", font="bold")
-    HighpassFrame.pack()
-
-    HighSlider = Scale(HighpassFrame, from_=0, to=10, orient=HORIZONTAL, length=200)
-    HighSlider.pack(padx=5, pady=5)
-    Label1 = Label(HighpassFrame, text="Adjust highpass")
-    Label1.pack()
-
-    Apply = Button(HighpassFrame, text="Apply filter", command=bandimage)
-    Apply.pack()
-
-    BandBtn.config(state=NORMAL)
-    HighBtn.config(state=DISABLED)
-    LowBtn.config(state=NORMAL)
-    NotchBtn.config(state=NORMAL)
-    L.destroy()
-
-
-    if BandpassFrame or LowpassFrame or NotchFrame is not None:
-        destroybandpass()
-        destroylowpass()
-        destroynotch()
-
-def lowpass():
-    global LowpassFrame
-    global BandBtn
-    global HighBtn
-    global LowBtn
-    global NotchBtn
-    global LowSlider
-
-    LowpassFrame = LabelFrame(FilterFrame, text="Lowpass", font="Bold")
-    LowpassFrame.pack()
-
-    LowSlider = Scale(LowpassFrame, from_=0, to=10, orient=HORIZONTAL, length=200)
-    LowSlider.pack(padx=5, pady=5)
-    Label1 = Label(LowpassFrame, text="Adjust lowpass")
-    Label1.pack()
-
-    Apply = Button(LowpassFrame, text="Apply filter", command=bandimage)
-    Apply.pack()
-
-    BandBtn.config(state=NORMAL)
-    HighBtn.config(state=NORMAL)
-    LowBtn.config(state=DISABLED)
-    NotchBtn.config(state=NORMAL)
-
-    L.destroy()
-
-    if BandpassFrame or HighpassFrame or NotchFrame is not None:
-        destroybandpass()
-        destroyhighpass()
-        destroynotch()
+        destroyequal()
 
 def notch():
     global NotchFrame
     global NotchSlider
+    global BandwidthSlider
 
     NotchFrame = LabelFrame(FilterFrame, text="Notch", font="bold")
     NotchFrame.pack()
 
-    NotchSlider = Scale(NotchFrame, from_=0, to=10, orient=HORIZONTAL, length=200)
+    NotchSlider = Scale(NotchFrame, from_=0, to=22050, orient=HORIZONTAL, length=200)
     NotchSlider.pack(padx=5, pady=5)
     Label1 = Label(NotchFrame, text="Adjust Notch")
     Label1.pack()
+    BandwidthSlider = Scale(NotchFrame, from_=0, to=22050, orient=HORIZONTAL, length=200)
+    BandwidthSlider.pack(padx=5, pady=5)
+    Label2 = Label(NotchFrame, text="Adjust Bandwidth")
+    Label2.pack()
 
-    Apply = Button(NotchFrame, text="Apply filter", command=bandimage)
+    Apply = Button(NotchFrame, text="Apply filter", command=notchimage)
     Apply.pack()
 
     BandBtn.config(state=NORMAL)
-    HighBtn.config(state=NORMAL)
-    LowBtn.config(state=NORMAL)
     NotchBtn.config(state=DISABLED)
+    EqualBtn.config(state=NORMAL)
 
     L.destroy()
 
-    if BandpassFrame or LowpassFrame or HighpassFrame is not None:
+    if EqualFrame or HighpassFrame is not None:
         destroybandpass()
-        destroylowpass()
-        destroyhighpass()
+        destroyequal()
+
+def equalization():
+    global EqualFrame
+    global EqualSlider
+
+    EqualFrame = LabelFrame(FilterFrame, text="Equaliatation", font="bold")
+    EqualFrame.pack()
+
+    BassSlider = Scale(EqualFrame, from_=0, to=100, orient=HORIZONTAL, length=200)
+    BassSlider.pack(padx=5, pady=5)
+    Label1 = Label(EqualFrame, text="Adjust low frequencies")
+    Label1.pack()
+    MidSlider = Scale(EqualFrame, from_=0, to=100, orient=HORIZONTAL, length=200)
+    MidSlider.pack(padx=5, pady=5)
+    Label2 = Label(EqualFrame, text="Adjust mid frequencies")
+    Label2.pack()
+    UppermidSlider = Scale(EqualFrame, from_=0, to=100, orient=HORIZONTAL, length=200)
+    UppermidSlider.pack(padx=5, pady=5)
+    Label2 = Label(EqualFrame, text="Adjust uppermid frequencies")
+    Label2.pack()
+    HigherSlider = Scale(EqualFrame, from_=0, to=100, orient=HORIZONTAL, length=200)
+    HigherSlider.pack(padx=5, pady=5)
+    Label2 = Label(EqualFrame, text="Adjust high frequencies")
+    Label2.pack()
+
+    #Apply = Button(EqualFrame, text="Apply filter", command=equalimage)
+    #Apply.pack()
+
+    BandBtn.config(state=NORMAL)
+    NotchBtn.config(state=NORMAL)
+    EqualBtn.config(state=DISABLED)
+
+    L.destroy()
+
+    if BandpassFrame or NotchFrame is not None:
+        destroybandpass()
+        destroynotch()
 
 def destroybandpass():
     global BandpassFrame
@@ -325,23 +324,17 @@ def destroybandpass():
         BandpassFrame.destroy()
         BandpassFrame = None
 
-def destroyhighpass():
-    global HighpassFrame
-    if HighpassFrame is not None:
-        HighpassFrame.destroy()
-        HighpassFrame = None
-
-def destroylowpass():
-    global LowpassFrame
-    if LowpassFrame is not None:
-        LowpassFrame.destroy()
-        LowpassFrame = None
-
 def destroynotch():
     global NotchFrame
     if NotchFrame is not None:
         NotchFrame.destroy()
         NotchFrame = None
+
+def destroyequal():
+    global EqualFrame
+    if EqualFrame is not None:
+        EqualFrame.destroy()
+        EqualFrame = None
 
 # Creates a menu in the interface, where the select function is called
 menu = Menu(root)
@@ -391,15 +384,12 @@ BtnFrame.pack(side=BOTTOM)
 BandBtn = Button(BtnFrame, text="Bandpass Filter", command=bandpass)
 BandBtn.grid(row=0, column=0, padx=5)
 BandBtn.config(state=DISABLED)
-HighBtn = Button(BtnFrame, text="Highpass Filter", command=highpass)
-HighBtn.grid(row=0, column=1, padx=5)
-HighBtn.config(state=DISABLED)
-LowBtn = Button(BtnFrame, text="Lowpass Filter", command=lowpass)
-LowBtn.grid(row=0, column=2, padx=5)
-LowBtn.config(state=DISABLED)
 NotchBtn = Button(BtnFrame, text="Notch Filter", command=notch)
-NotchBtn.grid(row=0, column=3, padx=5)
+NotchBtn.grid(row=0, column=1, padx=5)
 NotchBtn.config(state=DISABLED)
+EqualBtn = Button(BtnFrame, text="Equalization Filter", command=equalization)
+EqualBtn.grid(row=0, column=2, padx=5)
+# EqualBtn.config(state=DISABLED)
 
 # Display frame
 DisplayFrame = LabelFrame(Overframe, text="Preview", pady=5, padx=5)
