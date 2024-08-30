@@ -75,7 +75,7 @@ def select():
 
     # The filedialog.askopenfilename ask the user to choose a .png or all files to open in the program
     root.filename = filedialog.askopenfilename(
-        initialdir="C:/Users/marku/OneDrive - Aalborg Universitet/Githubs/P4-Audio", title="select a file",
+        initialdir="C:/Users/marku/OneDrive - Aalborg Universitet/Githubs/P4-Audio/Ny_forbedret_version", title="select a file",
         filetypes=(("WAV files", "*.wav"), ("All files", "*"))
     )
     Filepath.delete(0, END)
@@ -101,6 +101,12 @@ def select():
 
 def play():
     # Plays the sound in the load method
+    pygame.mixer.music.load(File)
+    pygame.mixer.music.play(loops=0)
+    progressbar['value'] = 0
+    proglabel.config(text="Waiting for sound clip")
+
+def playfilter():
     pygame.mixer.music.load('reconstructed_audio_from_combined_image.wav')
     pygame.mixer.music.play(loops=0)
     progressbar['value'] = 0
@@ -134,6 +140,7 @@ def displayimage():
     FullImage.config(state=NORMAL)
     BandBtn.config(state=NORMAL)
     NotchBtn.config(state=NORMAL)
+    EqualBtn.config(state=NORMAL)
 
 def bandimage():
     global LoadImage
@@ -148,9 +155,6 @@ def bandimage():
     ApplyFilters()
 
     CV2Image = cv2.imread("filtered_combined_image_bandpass.png", cv2.IMREAD_UNCHANGED)
-    #if CV2Image.dtype == np.uint16:
-    #    CV2Image = (CV2Image / 256).astype('uint8')
-    #CV2Image = cv2.cvtColor(CV2Image, cv2.COLOR_BGR2RGB)
     CV2Image = PIL.Image.fromarray(CV2Image)
     CV2Image.save("Bandpass Image.png")
     Equalloudness_transformation.Path = "Bandpass Image.png"
@@ -179,13 +183,10 @@ def notchimage():
     ApplyFilters()
 
     CV2Image = cv2.imread("filtered_combined_image_notch.png", cv2.IMREAD_UNCHANGED)
-    if CV2Image.dtype == np.uint16:
-        CV2Image = (CV2Image / 256).astype('uint8')
-    CV2Image = cv2.cvtColor(CV2Image, cv2.COLOR_BGR2RGB)
     CV2Image = PIL.Image.fromarray(CV2Image)
     CV2Image.save("Notch Image.png")
+    Equalloudness_transformation.Path = "Notch Image.png"
     Resize = CV2Image.resize((550, 490), PIL.Image.LANCZOS)
-    Resize.save("Notch Image.png")
     FLoad = ImageTk.PhotoImage(Resize)
 
     if FImage is None:
@@ -210,13 +211,10 @@ def equalimage():
     Equalization.mainfunc()
 
     CV2Image = cv2.imread("equalized_image.png", cv2.IMREAD_UNCHANGED)
-    if CV2Image.dtype == np.uint16:
-        CV2Image = (CV2Image / 256).astype('uint8')
-    CV2Image = cv2.cvtColor(CV2Image, cv2.COLOR_BGR2RGB)
     CV2Image = PIL.Image.fromarray(CV2Image)
     CV2Image.save("Equal Image.png")
+    Equalloudness_transformation.Path = "Equal Image.png"
     Resize = CV2Image.resize((550, 490), PIL.Image.LANCZOS)
-    Resize.save("Equalization Image.png")
     FLoad = ImageTk.PhotoImage(Resize)
 
     if FImage is None:
@@ -292,7 +290,9 @@ def bandpass():
     Label2.pack()
 
     Apply = Button(BandpassFrame, text="Apply filter", command=bandimage)
-    Apply.pack()
+    Apply.pack(side=LEFT)
+    Apply = Button(BandpassFrame, text="Play sound", command=playfilter)
+    Apply.pack(side=RIGHT)
 
     BandBtn.config(state=DISABLED)
     NotchBtn.config(state=NORMAL)
@@ -322,7 +322,9 @@ def notch():
     Label2.pack()
 
     Apply = Button(NotchFrame, text="Apply filter", command=notchimage)
-    Apply.pack()
+    Apply.pack(side=LEFT)
+    Apply = Button(NotchFrame, text="Play sound", command=playfilter)
+    Apply.pack(side=RIGHT)
 
     BandBtn.config(state=NORMAL)
     NotchBtn.config(state=DISABLED)
@@ -362,7 +364,9 @@ def equalization():
     Label2.pack()
 
     Apply = Button(EqualFrame, text="Apply filter", command=equalimage)
-    Apply.pack()
+    Apply.pack(side=LEFT)
+    Apply = Button(EqualFrame, text="Play sound", command=playfilter)
+    Apply.pack(side=RIGHT)
 
     BandBtn.config(state=NORMAL)
     NotchBtn.config(state=NORMAL)
