@@ -7,13 +7,17 @@ import PIL.Image
 import cv2
 import pygame
 import time
+import soundfile as sf
+
 import Equalloudness_transformation
 from Equalloudness_transformation import *
-import soundfile as sf
 
 import all_filters
 from PIL.ImageOps import scale
 from all_filters import ApplyFilters
+
+import Equalization
+from Equalization import *
 
 from PIL.ImageFilter import Kernel
 from scipy.io import wavfile
@@ -172,6 +176,36 @@ def notchimage():
         FImage.config(image=FLoad)
     FilterLabel.destroy()
 
+def equalimage():
+    global LoadImage
+    global FImage
+    global FLoad
+    global CV2Image
+    global sr
+
+    Equalization.low = BassSlider.get()
+    Equalization.mid = MidSlider.get()
+    Equalization.upper = UppermidSlider.get()
+    Equalization.high = HigherSlider.get()
+
+    Equalization.mainfunc()
+    print(Equalization.low)
+
+    CV2Image = cv2.imread("equalized_image.png", cv2.IMREAD_UNCHANGED)
+    if CV2Image.dtype == np.uint16:
+        CV2Image = (CV2Image / 256).astype('uint8')
+    CV2Image = cv2.cvtColor(CV2Image, cv2.COLOR_BGR2RGB)
+    CV2Image = PIL.Image.fromarray(CV2Image)
+    Resize = CV2Image.resize((550, 490), PIL.Image.LANCZOS)
+    FLoad = ImageTk.PhotoImage(Resize)
+
+    if FImage is None:
+        FImage = Label(FilteredImage, image=FLoad)
+        FImage.pack()
+    else:
+        FImage.config(image=FLoad)
+    FilterLabel.destroy()
+
 def getsr():
     return sr
 
@@ -283,7 +317,10 @@ def notch():
 
 def equalization():
     global EqualFrame
-    global EqualSlider
+    global BassSlider
+    global MidSlider
+    global UppermidSlider
+    global HigherSlider
 
     EqualFrame = LabelFrame(FilterFrame, text="Equaliatation", font="bold")
     EqualFrame.pack()
@@ -305,8 +342,8 @@ def equalization():
     Label2 = Label(EqualFrame, text="Adjust high frequencies")
     Label2.pack()
 
-    #Apply = Button(EqualFrame, text="Apply filter", command=equalimage)
-    #Apply.pack()
+    Apply = Button(EqualFrame, text="Apply filter", command=equalimage)
+    Apply.pack()
 
     BandBtn.config(state=NORMAL)
     NotchBtn.config(state=NORMAL)
