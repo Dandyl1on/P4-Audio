@@ -96,12 +96,6 @@ notch_freq = 12000  # Notch frequency in Hz
 bandwidth = 100  # Bandwidth of the notch filter in Hz
 
 def ApplyFilters():
-
-    print(high_freq)
-    print(low_freq)
-    print(notch_freq)
-    print(bandwidth)
-
     # Apply filters and save results
     process_and_save_filtered_image('bandpass', (low_freq, high_freq), 'filtered_combined_image_bandpass.png')
     process_and_save_filtered_image('lowpass', (high_freq,), 'filtered_combined_image_lowpass.png')

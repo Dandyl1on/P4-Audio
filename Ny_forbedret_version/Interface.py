@@ -33,6 +33,19 @@ root = Tk()
 root.title("Modifun")
 root.geometry("700x600")
 
+File = None
+CV2Image = None
+sr = None
+SImage = None
+SmallImageLoad = None
+HighBtn = None
+LowBtn = None
+BandwidthSlider = None
+BassSlider = None
+MidSlider = None
+UppermidSlider = None
+HigherSlider = None
+
 BandLowSlider = None
 BandHighSlider = None
 NotchSlider = None
@@ -189,7 +202,6 @@ def equalimage():
     Equalization.high = HigherSlider.get()
 
     Equalization.mainfunc()
-    print(Equalization.low)
 
     CV2Image = cv2.imread("equalized_image.png", cv2.IMREAD_UNCHANGED)
     if CV2Image.dtype == np.uint16:
@@ -247,7 +259,7 @@ def saveimage():
     photo_image_references.append(SmallImageLoad)
 
     SImage.config(image=SmallImageLoad)
-    Placement +=1
+    Placement += 1
 
 def bandpass():
     global BandpassFrame
@@ -277,7 +289,6 @@ def bandpass():
     BandBtn.config(state=DISABLED)
     NotchBtn.config(state=NORMAL)
     EqualBtn.config(state=NORMAL)
-
 
     L.destroy()
 
@@ -311,7 +322,7 @@ def notch():
 
     L.destroy()
 
-    if EqualFrame or HighpassFrame is not None:
+    if EqualFrame or BandpassFrame is not None:
         destroybandpass()
         destroyequal()
 
@@ -325,19 +336,19 @@ def equalization():
     EqualFrame = LabelFrame(FilterFrame, text="Equaliatation", font="bold")
     EqualFrame.pack()
 
-    BassSlider = Scale(EqualFrame, from_=0, to=100, orient=HORIZONTAL, length=200)
+    BassSlider = Scale(EqualFrame, from_=0, to=2, orient=HORIZONTAL, length=200, resolution=0.1)
     BassSlider.pack(padx=5, pady=5)
     Label1 = Label(EqualFrame, text="Adjust low frequencies")
     Label1.pack()
-    MidSlider = Scale(EqualFrame, from_=0, to=100, orient=HORIZONTAL, length=200)
+    MidSlider = Scale(EqualFrame, from_=0, to=2, orient=HORIZONTAL, length=200, resolution=0.1)
     MidSlider.pack(padx=5, pady=5)
     Label2 = Label(EqualFrame, text="Adjust mid frequencies")
     Label2.pack()
-    UppermidSlider = Scale(EqualFrame, from_=0, to=100, orient=HORIZONTAL, length=200)
+    UppermidSlider = Scale(EqualFrame, from_=0, to=2, orient=HORIZONTAL, length=200, resolution=0.1)
     UppermidSlider.pack(padx=5, pady=5)
     Label2 = Label(EqualFrame, text="Adjust uppermid frequencies")
     Label2.pack()
-    HigherSlider = Scale(EqualFrame, from_=0, to=100, orient=HORIZONTAL, length=200)
+    HigherSlider = Scale(EqualFrame, from_=0, to=2, orient=HORIZONTAL, length=200, resolution=0.1)
     HigherSlider.pack(padx=5, pady=5)
     Label2 = Label(EqualFrame, text="Adjust high frequencies")
     Label2.pack()

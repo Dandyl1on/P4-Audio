@@ -56,8 +56,6 @@ def mainfunc():
     output_path = 'equalized_image.png'
     sr = 22050  # Sample rate of the original audio
 
-    print(low, mid, upper, high)
-
     # Define the frequency bands and corresponding gain factors
     eq_settings = {
         (0, 200): low,  # Boost low frequencies (bass)
