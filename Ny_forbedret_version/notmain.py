@@ -4,6 +4,7 @@ from PIL import Image
 import soundfile as sf
 import os
 audio_path = "GI_GMF_B3_353_20140520_n.wav"
+
 def mainfunc():
 
     def reshape_to_custom(array, column_length):

@@ -65,3 +65,5 @@ def mainfunc():
     }
 
     apply_equalization(image_path, eq_settings, sr, output_path)
+
+

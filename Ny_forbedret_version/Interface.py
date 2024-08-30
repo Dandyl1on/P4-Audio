@@ -148,12 +148,16 @@ def bandimage():
     ApplyFilters()
 
     CV2Image = cv2.imread("filtered_combined_image_bandpass.png", cv2.IMREAD_UNCHANGED)
-    if CV2Image.dtype == np.uint16:
-        CV2Image = (CV2Image / 256).astype('uint8')
-    CV2Image = cv2.cvtColor(CV2Image, cv2.COLOR_BGR2RGB)
+    #if CV2Image.dtype == np.uint16:
+    #    CV2Image = (CV2Image / 256).astype('uint8')
+    #CV2Image = cv2.cvtColor(CV2Image, cv2.COLOR_BGR2RGB)
     CV2Image = PIL.Image.fromarray(CV2Image)
+    CV2Image.save("Bandpass Image.png")
+    Equalloudness_transformation.Path = "Bandpass Image.png"
     Resize = CV2Image.resize((550, 490), PIL.Image.LANCZOS)
     FLoad = ImageTk.PhotoImage(Resize)
+
+    Equalloudness_transformation.mainfunc()
 
     if FImage is None:
         FImage = Label(FilteredImage, image=FLoad)
@@ -179,7 +183,9 @@ def notchimage():
         CV2Image = (CV2Image / 256).astype('uint8')
     CV2Image = cv2.cvtColor(CV2Image, cv2.COLOR_BGR2RGB)
     CV2Image = PIL.Image.fromarray(CV2Image)
+    CV2Image.save("Notch Image.png")
     Resize = CV2Image.resize((550, 490), PIL.Image.LANCZOS)
+    Resize.save("Notch Image.png")
     FLoad = ImageTk.PhotoImage(Resize)
 
     if FImage is None:
@@ -208,7 +214,9 @@ def equalimage():
         CV2Image = (CV2Image / 256).astype('uint8')
     CV2Image = cv2.cvtColor(CV2Image, cv2.COLOR_BGR2RGB)
     CV2Image = PIL.Image.fromarray(CV2Image)
+    CV2Image.save("Equal Image.png")
     Resize = CV2Image.resize((550, 490), PIL.Image.LANCZOS)
+    Resize.save("Equalization Image.png")
     FLoad = ImageTk.PhotoImage(Resize)
 
     if FImage is None:
@@ -437,7 +445,7 @@ NotchBtn.grid(row=0, column=1, padx=5)
 NotchBtn.config(state=DISABLED)
 EqualBtn = Button(BtnFrame, text="Equalization Filter", command=equalization)
 EqualBtn.grid(row=0, column=2, padx=5)
-# EqualBtn.config(state=DISABLED)
+EqualBtn.config(state=DISABLED)
 
 # Display frame
 DisplayFrame = LabelFrame(Overframe, text="Preview", pady=5, padx=5)

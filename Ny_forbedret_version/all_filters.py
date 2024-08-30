@@ -2,7 +2,7 @@ import numpy as np
 import librosa
 from PIL import Image
 import soundfile as sf
-from main import mainfunc
+from Equalloudness_transformation import mainfunc
 
 magnitude_db_max, magnitude_db_min, sr, D = mainfunc()
 

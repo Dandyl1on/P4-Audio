@@ -5,7 +5,8 @@ import soundfile as sf
 import os
 from scipy.interpolate import interp1d
 
-audio_path = r"C:\Github\P4\P4-Audio\GI_GMF_C6_213_20140527.wav"
+audio_path = "GI_GMF_B3_353_20140520_n.wav"
+Path = "combined_image.png"
 def mainfunc():
     def reshape_to_custom(array, column_length):
         """ Reshape the array to have a fixed number of columns and calculate rows accordingly. """
@@ -56,10 +57,12 @@ def mainfunc():
         loudness_adjustments = loudness_adjustments * scale_factor
         loudness_adjustments = loudness_adjustments.reshape(-1, 1)
         magnitude_adjusted = magnitude / (10 ** (-loudness_adjustments / 20))
+        #print(loudness_adjustments)
         return magnitude_adjusted
 
-    # Load audio file and compute STFT
 
+
+    # Load audio file and compute STFT
     y, sr = librosa.load(audio_path, sr=None)
     D = librosa.stft(y)
     magnitude = np.abs(D)
@@ -103,7 +106,10 @@ def mainfunc():
     combined_img.save('combined_image.png')
 
     # Load combined image and extract magnitude and phase
-    combined_img_np = np.array(Image.open('combined_image.png'))
+    combined_img_np = np.array(Image.open(Path))
+    print(Path)
+
+    print(magnitude.shape)
     magnitude_img_np = combined_img_np[:magnitude_img.height, :]
     phase_img_np = combined_img_np[magnitude_img.height:, :]
     magnitude_normalized = magnitude_img_np / 255.0
@@ -135,3 +141,5 @@ def mainfunc():
     sf.write('reconstructed_audio_from_combined_image.wav', y_reconstructed, sr)
 
     print("Reconstructed audio saved.")
+
+    return magnitude_db_max, magnitude_db_min, sr, D
