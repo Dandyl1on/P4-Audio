@@ -107,6 +107,7 @@ def play():
     proglabel.config(text="Waiting for sound clip")
 
 def playfilter():
+    pygame.mixer.music.unload()
     pygame.mixer.music.load('reconstructed_audio_from_combined_image.wav')
     pygame.mixer.music.play(loops=0)
     progressbar['value'] = 0
@@ -115,6 +116,8 @@ def playfilter():
 def stop():
     pygame.mixer.music.stop()
     pygame.mixer.music.unload()
+    print("Music playing:", pygame.mixer.music.get_busy())
+
 
 def displayimage():
     global LoadImage
@@ -149,6 +152,8 @@ def bandimage():
     global CV2Image
     global sr
 
+    stop()
+
     all_filters.high_freq = BandHighSlider.get()
     all_filters.low_freq = BandLowSlider.get()
 
@@ -177,6 +182,8 @@ def notchimage():
     global CV2Image
     global sr
 
+    stop()
+
     all_filters.notch_freq = NotchSlider.get()
     all_filters.bandwidth = BandwidthSlider.get()
 
@@ -189,6 +196,8 @@ def notchimage():
     Resize = CV2Image.resize((550, 490), PIL.Image.LANCZOS)
     FLoad = ImageTk.PhotoImage(Resize)
 
+    Equalloudness_transformation.mainfunc()
+
     if FImage is None:
         FImage = Label(FilteredImage, image=FLoad)
         FImage.pack()
@@ -196,12 +205,15 @@ def notchimage():
         FImage.config(image=FLoad)
     FilterLabel.destroy()
 
+
 def equalimage():
     global LoadImage
     global FImage
     global FLoad
     global CV2Image
     global sr
+
+    stop()
 
     Equalization.low = BassSlider.get()
     Equalization.mid = MidSlider.get()
@@ -223,6 +235,7 @@ def equalimage():
     else:
         FImage.config(image=FLoad)
     FilterLabel.destroy()
+
 
 def getsr():
     return sr
