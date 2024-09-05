@@ -127,6 +127,7 @@ def displayimage():
     BandBtn.config(state=NORMAL)
     NotchBtn.config(state=NORMAL)
     EqualBtn.config(state=NORMAL)
+    SaveImage.config(state=NORMAL)
 
 def bandimage():
     global LoadImage
@@ -452,8 +453,7 @@ PlayImage.config(state=DISABLED)
 
 SaveImage = Button(BtnFrame, text="Save Image", padx=5, pady=5, command=saveimage)
 SaveImage.grid(row=0, column=1)
-
-# SaveImage.config(state=DISABLED)
+SaveImage.config(state=DISABLED)
 
 FullImage = Button(BtnFrame, text="Show full image", pady=5, padx=5, command=fullimage)
 FullImage.grid(row=0, column=2)
