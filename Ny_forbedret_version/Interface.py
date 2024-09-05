@@ -251,9 +251,9 @@ def saveimage():
     global Placement
 
     SImage = Label(scrollframe)
-    SImage.grid(row=Placement, column=0)
+    SImage.grid(row=Placement, column=0, padx=0)
 
-    text = Label(scrollframe, text=File, padx=10, pady=5, width=15)
+    text = Label(scrollframe, text=File, padx=0, pady=5, width=25)
     text.grid(row=Placement, column=1)
 
     Size = CV2Image.resize((50, 50), PIL.Image.LANCZOS)
@@ -276,15 +276,15 @@ def bandpass():
     BandpassFrame = LabelFrame(FilterFrame, text="Bandpass", font="BOLD")
     BandpassFrame.pack()
 
-    BandHighSlider = Scale(BandpassFrame, from_=0, to=22050, orient=HORIZONTAL, length=200)
-    BandHighSlider.pack(padx=5, pady=5)
-    Label1 = Label(BandpassFrame, text="Adjust highcut frequency")
-    Label1.pack()
-
     BandLowSlider = Scale(BandpassFrame, from_=0, to=22050, orient=HORIZONTAL, length=200)
     BandLowSlider.pack(padx=5, pady=5)
     Label2 = Label(BandpassFrame, text="Adjust lowcut frequency")
     Label2.pack()
+
+    BandHighSlider = Scale(BandpassFrame, from_=0, to=22050, orient=HORIZONTAL, length=200)
+    BandHighSlider.pack(padx=5, pady=5)
+    Label1 = Label(BandpassFrame, text="Adjust highcut frequency")
+    Label1.pack()
 
     Apply = Button(BandpassFrame, text="Apply filter", command=bandimage)
     Apply.pack(side=LEFT)
@@ -459,7 +459,6 @@ FullImage = Button(BtnFrame, text="Show full image", pady=5, padx=5, command=ful
 FullImage.grid(row=0, column=2)
 FullImage.config(state=DISABLED)
 
-
 # Small Images
 SmallImages = LabelFrame(F, text="Instances")
 SmallImages.grid(row=2, column=4)
@@ -470,7 +469,7 @@ canvas.grid(row=0, column=0, sticky="nsew")
 scroll = Scrollbar(SmallImages, command=canvas.yview)
 scroll.grid(row=0, column=1, sticky="ns")
 
-scrollframe = Frame(canvas, pady=5, padx=5)
+scrollframe = Frame(canvas, pady=5, padx=0)
 
 canvas.create_window((0, 0), window=scrollframe, anchor="nw")
 canvas.configure(yscrollcommand=scroll.set)
@@ -479,24 +478,6 @@ def on_frame_configure(event):
     canvas.configure(scrollregion=canvas.bbox("all"))
 
 scrollframe.bind("<Configure>", on_frame_configure)
-
-SImage2 = Label(scrollframe, text="", padx=5, pady=5, width=15)
-SImage2.grid(row=1, column=0)
-
-text2 = Label(scrollframe, text="", padx=5, pady=5, width=15)
-text2.grid(row=1, column=1)
-
-SImage3 = Label(scrollframe, text="", padx=5, pady=5, width=15)
-SImage3.grid(row=2, column=0)
-
-text3 = Label(scrollframe, text="", padx=5, pady=5, width=15)
-text3.grid(row=2, column=1)
-
-SImage4 = Label(scrollframe, text="", padx=5, pady=5, width=15)
-SImage4.grid(row=3, column=0)
-
-text4 = Label(scrollframe, text="", padx=5, pady=5, width=15)
-text4.grid(row=3, column=1)
 
 SmallImages.grid_rowconfigure(0, weight=1)
 SmallImages.grid_columnconfigure(0, weight=1)
