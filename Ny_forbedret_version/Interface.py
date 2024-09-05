@@ -66,9 +66,6 @@ EqualFrame = None
 pygame.mixer.init()
 
 def select():
-    global Filepath
-    global progressbar
-    global proglabel
     global File
 
     stop()
@@ -78,8 +75,6 @@ def select():
         initialdir="C:/Users/marku/OneDrive - Aalborg Universitet/Githubs/P4-Audio/Ny_forbedret_version", title="select a file",
         filetypes=(("WAV files", "*.wav"), ("All files", "*"))
     )
-    Filepath.delete(0, END)
-    Filepath.insert(0, root.filename)
 
     File = os.path.basename(root.filename)
 
@@ -88,13 +83,6 @@ def select():
     print(Equalloudness_transformation.audio_path)
     Equalloudness_transformation.mainfunc()
 
-    while progressbar['value'] < 100:
-        progressbar['value'] += 20
-        proglabel.config(text="Loading")
-        root.update_idletasks()
-        time.sleep(0.1)
-
-    proglabel.config(text="Loading complete!")
     ImageLabel.config(text=File)
     ImageLabel.config(height=0)
     displayimage()
@@ -103,21 +91,16 @@ def play():
     # Plays the sound in the load method
     pygame.mixer.music.load(File)
     pygame.mixer.music.play(loops=0)
-    progressbar['value'] = 0
-    proglabel.config(text="Waiting for sound clip")
 
 def playfilter():
     pygame.mixer.music.unload()
     pygame.mixer.music.load('reconstructed_audio_from_combined_image.wav')
     pygame.mixer.music.play(loops=0)
-    progressbar['value'] = 0
-    proglabel.config(text="Waiting for sound clip")
 
 def stop():
     pygame.mixer.music.stop()
     pygame.mixer.music.unload()
     print("Music playing:", pygame.mixer.music.get_busy())
-
 
 def displayimage():
     global LoadImage
@@ -421,28 +404,12 @@ Overframe = Frame(root, background="grey35")
 Overframe.pack(fill="both", expand=True)
 
 # Empty used for layout mangement
-EmptyLabel = Label(Overframe, width=10, height=11, background="grey35")
+EmptyLabel = Label(Overframe, width=10, height=2, background="grey35")
 EmptyLabel.grid(row=0, column=4)
-EmptyLabel = Label(Overframe, width=3, height=10, background="grey35")
+EmptyLabel = Label(Overframe, width=3, height=2, background="grey35")
 EmptyLabel.grid(row=0, column=0)
-EmptyLabel = Label(Overframe, width=9, height=11, background="grey35")
+EmptyLabel = Label(Overframe, width=9, height=2, background="grey35")
 EmptyLabel.grid(row=0, column=2)
-
-# Entry frame
-EntryFrame = LabelFrame(Overframe, text="Your sounds path directory")
-EntryFrame.grid(row=0, column=3)
-
-Playsound = Button(EntryFrame, text="Play sound", command=play)
-Playsound.pack(pady=5, padx=5)
-
-Filepath = Entry(EntryFrame, width=80)
-Filepath.pack(pady=10)
-
-progressbar = ttk.Progressbar(EntryFrame, orient=HORIZONTAL)
-progressbar.pack(pady=5, padx=5)
-progressbar['value'] = 0
-proglabel = Label(EntryFrame, text="Waiting for sound clip")
-proglabel.pack(pady=5, padx=5)
 
 # Filter frame
 FilterFrame = LabelFrame(Overframe, text="Choose filters", padx=5, pady=5)
