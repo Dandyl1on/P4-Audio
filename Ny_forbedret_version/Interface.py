@@ -404,11 +404,11 @@ Overframe = Frame(root, background="grey35")
 Overframe.pack(fill="both", expand=True)
 
 # Empty used for layout mangement
-EmptyLabel = Label(Overframe, width=10, height=2, background="grey35")
+EmptyLabel = Label(Overframe, width=20, height=2, background="grey35")
 EmptyLabel.grid(row=0, column=4)
 EmptyLabel = Label(Overframe, width=3, height=2, background="grey35")
 EmptyLabel.grid(row=0, column=0)
-EmptyLabel = Label(Overframe, width=9, height=2, background="grey35")
+EmptyLabel = Label(Overframe, width=20, height=2, background="grey35")
 EmptyLabel.grid(row=0, column=2)
 
 # Filter frame
