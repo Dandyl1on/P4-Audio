@@ -294,12 +294,12 @@ def bandpass():
 
     BandHighSlider = Scale(BandpassFrame, from_=0, to=22050, orient=HORIZONTAL, length=200)
     BandHighSlider.pack(padx=5, pady=5)
-    Label1 = Label(BandpassFrame, text="Adjust highpass")
+    Label1 = Label(BandpassFrame, text="Adjust highcut frequency")
     Label1.pack()
 
     BandLowSlider = Scale(BandpassFrame, from_=0, to=22050, orient=HORIZONTAL, length=200)
     BandLowSlider.pack(padx=5, pady=5)
-    Label2 = Label(BandpassFrame, text="Adjust lowpass")
+    Label2 = Label(BandpassFrame, text="Adjust lowcut frequency")
     Label2.pack()
 
     Apply = Button(BandpassFrame, text="Apply filter", command=bandimage)
@@ -356,7 +356,7 @@ def equalization():
     global UppermidSlider
     global HigherSlider
 
-    EqualFrame = LabelFrame(FilterFrame, text="Equaliatation", font="bold")
+    EqualFrame = LabelFrame(FilterFrame, text="Equalization", font="bold")
     EqualFrame.pack()
 
     BassSlider = Scale(EqualFrame, from_=0, to=2, orient=HORIZONTAL, length=200, resolution=0.1)
