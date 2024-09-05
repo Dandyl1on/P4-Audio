@@ -480,22 +480,22 @@ def on_frame_configure(event):
 
 scrollframe.bind("<Configure>", on_frame_configure)
 
-SImage2 = Label(scrollframe, text="", padx=10, pady=5, width=15)
+SImage2 = Label(scrollframe, text="", padx=5, pady=5, width=15)
 SImage2.grid(row=1, column=0)
 
-text2 = Label(scrollframe, text="", padx=10, pady=5, width=15)
+text2 = Label(scrollframe, text="", padx=5, pady=5, width=15)
 text2.grid(row=1, column=1)
 
-SImage3 = Label(scrollframe, text="", padx=10, pady=5, width=15)
+SImage3 = Label(scrollframe, text="", padx=5, pady=5, width=15)
 SImage3.grid(row=2, column=0)
 
-text3 = Label(scrollframe, text="", padx=10, pady=5, width=15)
+text3 = Label(scrollframe, text="", padx=5, pady=5, width=15)
 text3.grid(row=2, column=1)
 
-SImage4 = Label(scrollframe, text="peekaboo", padx=10, pady=5, width=15)
+SImage4 = Label(scrollframe, text="", padx=5, pady=5, width=15)
 SImage4.grid(row=3, column=0)
 
-text4 = Label(scrollframe, text="", padx=10, pady=5, width=15)
+text4 = Label(scrollframe, text="", padx=5, pady=5, width=15)
 text4.grid(row=3, column=1)
 
 SmallImages.grid_rowconfigure(0, weight=1)
