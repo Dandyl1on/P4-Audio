@@ -9,6 +9,9 @@ import pygame
 import time
 import soundfile as sf
 
+import func_for_interface
+from func_for_interface import *
+
 import Equalloudness_transformation
 from Equalloudness_transformation import *
 
@@ -26,36 +29,33 @@ from fileinput import filename
 from tkinter import *
 from tkinter import filedialog, Label, Tk, messagebox as mb, ttk
 
+# Placement and list of saved images intances
 Placement = 0
 photo_image_references = []
 
+# Creates the window
 root = Tk()
 root.title("Modifun")
 root.geometry("700x600")
 
+# File is the original sound file chosen by the user
 File = None
+# CV2Image is the image made from the Equalloudness transformation script, so it can be opened in tkinter
 CV2Image = None
-sr = None
-SImage = None
-SmallImageLoad = None
-HighBtn = None
-LowBtn = None
-BandwidthSlider = None
-BassSlider = None
-MidSlider = None
-UppermidSlider = None
-HigherSlider = None
-
-BandLowSlider = None
-BandHighSlider = None
-NotchSlider = None
 
 # None types for Image displaying
-LoadImage = None
-BandIMG = None
 PlaceImage = None
-FImage = None
-FLoad = None
+SImage = None
+SmallImageLoad = None
+
+BandpassImageDisplay = None
+NotchImageDisplay = None
+EqualizationImageDisplay = None
+
+
+# StartImage ensures that the unfilted opened image can be created and not garbage collected
+originalImage = None
+Full = None
 
 # None types for filter sliders
 BandpassFrame = None
@@ -65,9 +65,15 @@ EqualFrame = None
 # Creates a sound player from pygame
 pygame.mixer.init()
 
-def select():
+def selectimage():
     global File
-
+    global LoadImage
+    global PlaceImage
+    global File
+    global CV2Image
+    global ogImage
+    global originalImage
+    # Calls stop function to unload any previous sounds played
     stop()
 
     # The filedialog.askopenfilename ask the user to choose a .png or all files to open in the program
@@ -75,52 +81,31 @@ def select():
         initialdir="C:/Users/marku/OneDrive - Aalborg Universitet/Githubs/P4-Audio/Ny_forbedret_version", title="select a file",
         filetypes=(("WAV files", "*.wav"), ("All files", "*"))
     )
-
+    # Makes the filename into File variable, so it can be used by other functions that isn´t tkinter
     File = os.path.basename(root.filename)
-
+    # Sets the audio_path in Equalloudness_transformation to the file
     Equalloudness_transformation.audio_path = root.filename
 
     print(Equalloudness_transformation.audio_path)
-    Equalloudness_transformation.mainfunc()
+    Equalloudness_transformation.infoFunc()
 
-    ImageLabel.config(text=File)
-    ImageLabel.config(height=0)
+    ImageLabel.destroy()
     displayimage()
-
-def play():
-    # Plays the sound in the load method
-    pygame.mixer.music.load(File)
-    pygame.mixer.music.play(loops=0)
-
-def playfilter():
-    pygame.mixer.music.unload()
-    pygame.mixer.music.load('reconstructed_audio_from_combined_image.wav')
-    pygame.mixer.music.play(loops=0)
-
-def stop():
-    pygame.mixer.music.stop()
-    pygame.mixer.music.unload()
-    print("Music playing:", pygame.mixer.music.get_busy())
-
-def displayimage():
-    global LoadImage
-    global PlaceImage
-    global File
-    global CV2Image
-
-    CV2Image = cv2.imread("combined_image.png", cv2.IMREAD_UNCHANGED)
-    if CV2Image.dtype == np.uint16:
-        CV2Image = (CV2Image / 256).astype('uint8')
-    CV2Image = cv2.cvtColor(CV2Image, cv2.COLOR_BGR2RGB)
-    CV2Image = PIL.Image.fromarray(CV2Image)
-    Resize = CV2Image.resize((300, 300), PIL.Image.LANCZOS)
-    LoadImage = ImageTk.PhotoImage(Resize)
+    FilteredImage.config(text=File)
 
     if PlaceImage is None:
-        PlaceImage = Label(UnderFrame, image=LoadImage)
+        PlaceImage = Label(UnderFrame, image=func_for_interface.LoadImage)
         PlaceImage.pack()
     else:
-        PlaceImage.config(image=LoadImage)
+        PlaceImage.config(image=func_for_interface.LoadImage)
+
+    ogImage = ImageTk.PhotoImage(func_for_interface.CV2Image)
+
+    if originalImage is not None:
+        originalImage.config(image=ogImage)
+    else:
+        originalImage = Label(FilterLabel, image=ogImage)
+        originalImage.pack()
 
     PlayImage.config(state=NORMAL)
     FullImage.config(state=NORMAL)
@@ -128,165 +113,64 @@ def displayimage():
     NotchBtn.config(state=NORMAL)
     EqualBtn.config(state=NORMAL)
     SaveImage.config(state=NORMAL)
+    # PlacingNumbers()
 
-def bandimage():
-    global LoadImage
-    global FImage
-    global FLoad
-    global CV2Image
-    global sr
-
-    stop()
-
-    all_filters.high_freq = BandHighSlider.get()
-    all_filters.low_freq = BandLowSlider.get()
-
-    ApplyFilters()
-
-    CV2Image = cv2.imread("filtered_combined_image_bandpass.png", cv2.IMREAD_UNCHANGED)
-    CV2Image = PIL.Image.fromarray(CV2Image)
-    CV2Image.save("Bandpass Image.png")
-    Equalloudness_transformation.Path = "Bandpass Image.png"
-    Resize = CV2Image.resize((550, 490), PIL.Image.LANCZOS)
-    FLoad = ImageTk.PhotoImage(Resize)
-
-    Equalloudness_transformation.mainfunc()
-
-    if FImage is None:
-        FImage = Label(FilteredImage, image=FLoad)
-        FImage.pack()
-    else:
-        FImage.config(image=FLoad)
-    FilterLabel.destroy()
-
-def notchimage():
-    global LoadImage
-    global FImage
-    global FLoad
-    global CV2Image
-    global sr
-
-    stop()
-
-    all_filters.notch_freq = NotchSlider.get()
-    all_filters.bandwidth = BandwidthSlider.get()
-
-    ApplyFilters()
-
-    CV2Image = cv2.imread("filtered_combined_image_notch.png", cv2.IMREAD_UNCHANGED)
-    CV2Image = PIL.Image.fromarray(CV2Image)
-    CV2Image.save("Notch Image.png")
-    Equalloudness_transformation.Path = "Notch Image.png"
-    Resize = CV2Image.resize((550, 490), PIL.Image.LANCZOS)
-    FLoad = ImageTk.PhotoImage(Resize)
-
-    Equalloudness_transformation.mainfunc()
-
-    if FImage is None:
-        FImage = Label(FilteredImage, image=FLoad)
-        FImage.pack()
-    else:
-        FImage.config(image=FLoad)
-    FilterLabel.destroy()
-
-
-def equalimage():
-    global LoadImage
-    global FImage
-    global FLoad
-    global CV2Image
-    global sr
-
-    stop()
-
-    Equalization.low = BassSlider.get()
-    Equalization.mid = MidSlider.get()
-    Equalization.upper = UppermidSlider.get()
-    Equalization.high = HigherSlider.get()
-
-    Equalization.mainfunc()
-
-    CV2Image = cv2.imread("equalized_image.png", cv2.IMREAD_UNCHANGED)
-    CV2Image = PIL.Image.fromarray(CV2Image)
-    CV2Image.save("Equal Image.png")
-    Equalloudness_transformation.Path = "Equal Image.png"
-    Resize = CV2Image.resize((550, 490), PIL.Image.LANCZOS)
-    FLoad = ImageTk.PhotoImage(Resize)
-
-    if FImage is None:
-        FImage = Label(FilteredImage, image=FLoad)
-        FImage.pack()
-    else:
-        FImage.config(image=FLoad)
-    FilterLabel.destroy()
-
-
-def getsr():
-    return sr
-
-def fullimage():
-    global CV2Image
-    global FLoad
-
-    LargeImage = Toplevel(root)
-    LargeImage.title("Full Image")
-    LargeImage.geometry("750x680")
-
-    CV2Image = cv2.imread("combined_image.png", cv2.IMREAD_UNCHANGED)
-    if CV2Image.dtype == np.uint16:
-        CV2Image = (CV2Image / 256).astype('uint8')
-    CV2Image = cv2.cvtColor(CV2Image, cv2.COLOR_BGR2RGB)
-    CV2Image = PIL.Image.fromarray(CV2Image)
-
-    FLoad = ImageTk.PhotoImage(CV2Image)
-    NewImage = Label(LargeImage, image=FLoad)
-    NewImage.pack(pady=10, padx=10)
-
-def saveimage():
-    global LoadImage
-    global CV2Image
-    global SImage
-    global SmallImageLoad
-    global File
-    global Placement
-
-    SImage = Label(scrollframe)
-    SImage.grid(row=Placement, column=0, padx=0)
-
-    text = Label(scrollframe, text=File, padx=0, pady=5, width=25)
-    text.grid(row=Placement, column=1)
-
-    Size = CV2Image.resize((50, 50), PIL.Image.LANCZOS)
-    SmallImageLoad = ImageTk.PhotoImage(Size)
-
-    photo_image_references.append(SmallImageLoad)
-
-    SImage.config(image=SmallImageLoad)
-    Placement += 1
-
-def bandpass():
+def createbandpassframe():
     global BandpassFrame
     global BandBtn
-    global HighBtn
-    global LowBtn
     global NotchBtn
     global BandHighSlider
     global BandLowSlider
 
+    def lowsliderupdate(val):
+        lowlimit = float(BandLowSlider.get())
+        highlimit = float(BandHighSlider.get())
+
+        # Ensure the low slider value is less than the high slider
+        if lowlimit >= highlimit:
+            BandLowSlider.set(high - 1)  # Ensure low is less than high
+
+    def highsliderupdate(val):
+        lowlimit = float(BandLowSlider.get())
+        highlimit = float(BandHighSlider.get())
+
+        # Ensure the high slider value is greater than the low slider
+        if highlimit <= lowlimit:
+            BandHighSlider.set(low + 1)  # Ensure high is greater than low
+
     BandpassFrame = LabelFrame(FilterFrame, text="Bandpass", font="BOLD")
     BandpassFrame.pack()
 
-    BandLowSlider = Scale(BandpassFrame, from_=0, to=22050, orient=HORIZONTAL, length=200)
+    BandLowSlider = Scale(BandpassFrame, from_=0, to=22050, orient=HORIZONTAL, length=200, command=lowsliderupdate)
     BandLowSlider.pack(padx=5, pady=5)
     Label2 = Label(BandpassFrame, text="Adjust lowcut frequency")
     Label2.pack()
 
-    BandHighSlider = Scale(BandpassFrame, from_=0, to=22050, orient=HORIZONTAL, length=200)
+    BandHighSlider = Scale(BandpassFrame, from_=0, to=22050, orient=HORIZONTAL, length=200, command=highsliderupdate)
     BandHighSlider.pack(padx=5, pady=5)
     Label1 = Label(BandpassFrame, text="Adjust highcut frequency")
     Label1.pack()
 
-    Apply = Button(BandpassFrame, text="Apply filter", command=bandimage)
+    def getHighandLow():
+        global BandpassImageDisplay
+        global FLoad
+        global CV2Image
+        global FilterLabel
+
+        low = BandLowSlider.get()
+        high = BandHighSlider.get()
+        bandimage(high, low)
+
+        FilterLabel.destroy()
+        originalImage.destroy()
+
+        if BandpassImageDisplay is None:
+            BandpassImageDisplay = Label(FilteredImage, image=func_for_interface.FLoad)
+            BandpassImageDisplay.pack(side=RIGHT)
+        else:
+            BandpassImageDisplay.config(image=func_for_interface.FLoad)
+
+    Apply = Button(BandpassFrame, text="Apply filter", command=getHighandLow)
     Apply.pack(side=LEFT)
     Apply = Button(BandpassFrame, text="Play sound", command=playfilter)
     Apply.pack(side=RIGHT)
@@ -298,10 +182,10 @@ def bandpass():
     L.destroy()
 
     if EqualFrame or NotchFrame is not None:
-        destroynotch()
-        destroyequal()
+        destroynotchframe()
+        destroyequalframe()
 
-def notch():
+def createnotchframe():
     global NotchFrame
     global NotchSlider
     global BandwidthSlider
@@ -318,7 +202,26 @@ def notch():
     Label2 = Label(NotchFrame, text="Adjust Bandwidth")
     Label2.pack()
 
-    Apply = Button(NotchFrame, text="Apply filter", command=notchimage)
+    def getnotchandbandwidth():
+        global NotchImageDisplay
+        global FLoad
+        global CV2Image
+        global FilterLabel
+
+        notch = NotchSlider.get()
+        bandwidth = BandwidthSlider.get()
+        notchimage(notch, bandwidth)
+
+        FilterLabel.destroy()
+        originalImage.destroy()
+
+        if NotchImageDisplay is None:
+            NotchImageDisplay = Label(FilteredImage, image=func_for_interface.FLoad)
+            NotchImageDisplay.pack(side=RIGHT)
+        else:
+            NotchImageDisplay.config(image=func_for_interface.FLoad)
+
+    Apply = Button(NotchFrame, text="Apply filter", command=getnotchandbandwidth)
     Apply.pack(side=LEFT)
     Apply = Button(NotchFrame, text="Play sound", command=playfilter)
     Apply.pack(side=RIGHT)
@@ -330,10 +233,10 @@ def notch():
     L.destroy()
 
     if EqualFrame or BandpassFrame is not None:
-        destroybandpass()
-        destroyequal()
+        destroybandpassframe()
+        destroyequalframe()
 
-def equalization():
+def createequalizationframe():
     global EqualFrame
     global BassSlider
     global MidSlider
@@ -360,7 +263,28 @@ def equalization():
     Label2 = Label(EqualFrame, text="Adjust high frequencies")
     Label2.pack()
 
-    Apply = Button(EqualFrame, text="Apply filter", command=equalimage)
+    def getequalizationsliders():
+        global EqualizationImageDisplay
+        global FLoad
+        global CV2Image
+        global FilterLabel
+
+        bass = BassSlider.get()
+        mid = MidSlider.get()
+        uppermid = UppermidSlider.get()
+        high = HigherSlider.get()
+        equalimage(bass, mid, uppermid, high)
+
+        FilterLabel.destroy()
+        originalImage.destroy()
+
+        if EqualizationImageDisplay is None:
+            EqualizationImageDisplay = Label(FilteredImage, image=func_for_interface.FLoad)
+            EqualizationImageDisplay.pack(side=RIGHT)
+        else:
+            EqualizationImageDisplay.config(image=func_for_interface.FLoad)
+
+    Apply = Button(EqualFrame, text="Apply filter", command=getequalizationsliders)
     Apply.pack(side=LEFT)
     Apply = Button(EqualFrame, text="Play sound", command=playfilter)
     Apply.pack(side=RIGHT)
@@ -372,34 +296,34 @@ def equalization():
     L.destroy()
 
     if BandpassFrame or NotchFrame is not None:
-        destroybandpass()
-        destroynotch()
+        destroybandpassframe()
+        destroynotchframe()
 
-def destroybandpass():
+def destroybandpassframe():
     global BandpassFrame
     if BandpassFrame is not None:
         BandpassFrame.destroy()
         BandpassFrame = None
 
-def destroynotch():
+def destroynotchframe():
     global NotchFrame
     if NotchFrame is not None:
         NotchFrame.destroy()
         NotchFrame = None
 
-def destroyequal():
+def destroyequalframe():
     global EqualFrame
     if EqualFrame is not None:
         EqualFrame.destroy()
         EqualFrame = None
+
 
 # Creates a menu in the interface, where the select function is called
 menu = Menu(root)
 root.config(menu=menu)
 fileMenu = Menu(menu)
 menu.add_cascade(label="File", menu=fileMenu)
-fileMenu.add_command(label="Open sound path", command=select)
-fileMenu.add_command(label="Show full image", command=fullimage)
+fileMenu.add_command(label="Open sound path", command=selectimage)
 
 Overframe = Frame(root, background="grey35")
 Overframe.pack(fill="both", expand=True)
@@ -422,15 +346,15 @@ L.pack(side=TOP)
 BtnFrame = Frame(FilterFrame, pady=5)
 BtnFrame.pack(side=BOTTOM)
 
-BandBtn = Button(BtnFrame, text="Bandpass Filter", command=bandpass)
+BandBtn = Button(BtnFrame, text="Bandpass Filter", command=createbandpassframe)
 BandBtn.grid(row=0, column=0, padx=5)
-BandBtn.config(state=DISABLED)
-NotchBtn = Button(BtnFrame, text="Notch Filter", command=notch)
+#BandBtn.config(state=DISABLED)
+NotchBtn = Button(BtnFrame, text="Notch Filter", command=createnotchframe)
 NotchBtn.grid(row=0, column=1, padx=5)
-NotchBtn.config(state=DISABLED)
-EqualBtn = Button(BtnFrame, text="Equalization Filter", command=equalization)
+#NotchBtn.config(state=DISABLED)
+EqualBtn = Button(BtnFrame, text="Equalization Filter", command=createequalizationframe)
 EqualBtn.grid(row=0, column=2, padx=5)
-EqualBtn.config(state=DISABLED)
+#EqualBtn.config(state=DISABLED)
 
 # Display frame
 DisplayFrame = LabelFrame(Overframe, text="Preview", pady=5, padx=5)
@@ -447,17 +371,17 @@ F.pack(side=BOTTOM)
 ImageLabel = Label(UnderFrame, text="Your image will be displayed here", width=42, height=24)
 ImageLabel.pack(side=TOP)
 
-PlayImage = Button(BtnFrame, text="Play sound", pady=5, padx=15, command=play)
+PlayImage = Button(BtnFrame, text="Play sound", pady=5, padx=15, command=func_for_interface.play)
 PlayImage.grid(row=0, column=0)
-PlayImage.config(state=DISABLED)
+#PlayImage.config(state=DISABLED)
 
 SaveImage = Button(BtnFrame, text="Save Image", padx=5, pady=5, command=saveimage)
 SaveImage.grid(row=0, column=1)
-SaveImage.config(state=DISABLED)
+#SaveImage.config(state=DISABLED)
 
 FullImage = Button(BtnFrame, text="Show full image", pady=5, padx=5, command=fullimage)
 FullImage.grid(row=0, column=2)
-FullImage.config(state=DISABLED)
+#FullImage.config(state=DISABLED)
 
 # Small Images
 SmallImages = LabelFrame(F, text="Instances")
@@ -487,6 +411,9 @@ FilteredImage = LabelFrame(Overframe, text="Image with choosen filter applied", 
 FilteredImage.grid(row=1, column=3)
 
 FilterLabel = Label(FilteredImage, text="Your image will be displayed here", width=78, height=32)
-FilterLabel.pack()
+FilterLabel.pack(side=RIGHT)
+
+NumberFrame = Frame(FilteredImage, height=32)
+NumberFrame.pack()
 
 mainloop()

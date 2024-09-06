@@ -149,11 +149,11 @@ def infoFunc():
         print(f"Reconstructed audio saved to {output_audio_path}")
 
 
-
-    if __name__ == "__main__":
-        # Example of how to call the functions independently
-        magnitude_db_max, magnitude_db_min, sr, D = construct_image_from_audio(audio_path)
-        reconstruct_audio_from_image(magnitude_db_max, magnitude_db_min, sr, D)
-
+    magnitude_db_max, magnitude_db_min, sr, D = construct_image_from_audio(audio_path)
 
     return magnitude_db_max, magnitude_db_min, sr, D
+
+    # If you still want to keep this block for script execution, move it out of the function
+    if __name__ == "__main__":
+        magnitude_db_max, magnitude_db_min, sr, D = infoFunc()
+        reconstruct_audio_from_image(magnitude_db_max, magnitude_db_min, sr, D)

@@ -2,9 +2,9 @@ import numpy as np
 import librosa
 from PIL import Image
 import soundfile as sf
-from Equalloudness_transformation import mainfunc
+from Equalloudness_transformation import infoFunc
 
-magnitude_db_max, magnitude_db_min, sr, D = mainfunc()
+magnitude_db_max, magnitude_db_min, sr, D = infoFunc()
 
 def reshape_to_custom(array, column_length):
     """ Reshape the array to have a fixed number of columns and calculate rows accordingly. """
