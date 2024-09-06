@@ -66,9 +66,6 @@ EqualFrame = None
 pygame.mixer.init()
 
 def select():
-    global Filepath
-    global progressbar
-    global proglabel
     global File
 
     stop()
@@ -78,8 +75,6 @@ def select():
         initialdir="C:/Users/marku/OneDrive - Aalborg Universitet/Githubs/P4-Audio/Ny_forbedret_version", title="select a file",
         filetypes=(("WAV files", "*.wav"), ("All files", "*"))
     )
-    Filepath.delete(0, END)
-    Filepath.insert(0, root.filename)
 
     File = os.path.basename(root.filename)
 
@@ -88,13 +83,6 @@ def select():
     print(Equalloudness_transformation.audio_path)
     Equalloudness_transformation.mainfunc()
 
-    while progressbar['value'] < 100:
-        progressbar['value'] += 20
-        proglabel.config(text="Loading")
-        root.update_idletasks()
-        time.sleep(0.1)
-
-    proglabel.config(text="Loading complete!")
     ImageLabel.config(text=File)
     ImageLabel.config(height=0)
     displayimage()
@@ -103,18 +91,16 @@ def play():
     # Plays the sound in the load method
     pygame.mixer.music.load(File)
     pygame.mixer.music.play(loops=0)
-    progressbar['value'] = 0
-    proglabel.config(text="Waiting for sound clip")
 
 def playfilter():
+    pygame.mixer.music.unload()
     pygame.mixer.music.load('reconstructed_audio_from_combined_image.wav')
     pygame.mixer.music.play(loops=0)
-    progressbar['value'] = 0
-    proglabel.config(text="Waiting for sound clip")
 
 def stop():
     pygame.mixer.music.stop()
     pygame.mixer.music.unload()
+    print("Music playing:", pygame.mixer.music.get_busy())
 
 def displayimage():
     global LoadImage
@@ -141,6 +127,7 @@ def displayimage():
     BandBtn.config(state=NORMAL)
     NotchBtn.config(state=NORMAL)
     EqualBtn.config(state=NORMAL)
+    SaveImage.config(state=NORMAL)
 
 def bandimage():
     global LoadImage
@@ -148,6 +135,8 @@ def bandimage():
     global FLoad
     global CV2Image
     global sr
+
+    stop()
 
     all_filters.high_freq = BandHighSlider.get()
     all_filters.low_freq = BandLowSlider.get()
@@ -177,6 +166,8 @@ def notchimage():
     global CV2Image
     global sr
 
+    stop()
+
     all_filters.notch_freq = NotchSlider.get()
     all_filters.bandwidth = BandwidthSlider.get()
 
@@ -189,6 +180,8 @@ def notchimage():
     Resize = CV2Image.resize((550, 490), PIL.Image.LANCZOS)
     FLoad = ImageTk.PhotoImage(Resize)
 
+    Equalloudness_transformation.mainfunc()
+
     if FImage is None:
         FImage = Label(FilteredImage, image=FLoad)
         FImage.pack()
@@ -196,12 +189,15 @@ def notchimage():
         FImage.config(image=FLoad)
     FilterLabel.destroy()
 
+
 def equalimage():
     global LoadImage
     global FImage
     global FLoad
     global CV2Image
     global sr
+
+    stop()
 
     Equalization.low = BassSlider.get()
     Equalization.mid = MidSlider.get()
@@ -223,6 +219,7 @@ def equalimage():
     else:
         FImage.config(image=FLoad)
     FilterLabel.destroy()
+
 
 def getsr():
     return sr
@@ -254,9 +251,9 @@ def saveimage():
     global Placement
 
     SImage = Label(scrollframe)
-    SImage.grid(row=Placement, column=0)
+    SImage.grid(row=Placement, column=0, padx=0)
 
-    text = Label(scrollframe, text=File, padx=10, pady=5, width=15)
+    text = Label(scrollframe, text=File, padx=0, pady=5, width=25)
     text.grid(row=Placement, column=1)
 
     Size = CV2Image.resize((50, 50), PIL.Image.LANCZOS)
@@ -279,15 +276,15 @@ def bandpass():
     BandpassFrame = LabelFrame(FilterFrame, text="Bandpass", font="BOLD")
     BandpassFrame.pack()
 
-    BandHighSlider = Scale(BandpassFrame, from_=0, to=22050, orient=HORIZONTAL, length=200)
-    BandHighSlider.pack(padx=5, pady=5)
-    Label1 = Label(BandpassFrame, text="Adjust highpass")
-    Label1.pack()
-
     BandLowSlider = Scale(BandpassFrame, from_=0, to=22050, orient=HORIZONTAL, length=200)
     BandLowSlider.pack(padx=5, pady=5)
-    Label2 = Label(BandpassFrame, text="Adjust lowpass")
+    Label2 = Label(BandpassFrame, text="Adjust lowcut frequency")
     Label2.pack()
+
+    BandHighSlider = Scale(BandpassFrame, from_=0, to=22050, orient=HORIZONTAL, length=200)
+    BandHighSlider.pack(padx=5, pady=5)
+    Label1 = Label(BandpassFrame, text="Adjust highcut frequency")
+    Label1.pack()
 
     Apply = Button(BandpassFrame, text="Apply filter", command=bandimage)
     Apply.pack(side=LEFT)
@@ -343,7 +340,7 @@ def equalization():
     global UppermidSlider
     global HigherSlider
 
-    EqualFrame = LabelFrame(FilterFrame, text="Equaliatation", font="bold")
+    EqualFrame = LabelFrame(FilterFrame, text="Equalization", font="bold")
     EqualFrame.pack()
 
     BassSlider = Scale(EqualFrame, from_=0, to=2, orient=HORIZONTAL, length=200, resolution=0.1)
@@ -408,28 +405,12 @@ Overframe = Frame(root, background="grey35")
 Overframe.pack(fill="both", expand=True)
 
 # Empty used for layout mangement
-EmptyLabel = Label(Overframe, width=10, height=11, background="grey35")
+EmptyLabel = Label(Overframe, width=20, height=2, background="grey35")
 EmptyLabel.grid(row=0, column=4)
-EmptyLabel = Label(Overframe, width=3, height=10, background="grey35")
+EmptyLabel = Label(Overframe, width=3, height=2, background="grey35")
 EmptyLabel.grid(row=0, column=0)
-EmptyLabel = Label(Overframe, width=9, height=11, background="grey35")
+EmptyLabel = Label(Overframe, width=20, height=2, background="grey35")
 EmptyLabel.grid(row=0, column=2)
-
-# Entry frame
-EntryFrame = LabelFrame(Overframe, text="Your sounds path directory")
-EntryFrame.grid(row=0, column=3)
-
-Playsound = Button(EntryFrame, text="Play sound", command=play)
-Playsound.pack(pady=5, padx=5)
-
-Filepath = Entry(EntryFrame, width=80)
-Filepath.pack(pady=10)
-
-progressbar = ttk.Progressbar(EntryFrame, orient=HORIZONTAL)
-progressbar.pack(pady=5, padx=5)
-progressbar['value'] = 0
-proglabel = Label(EntryFrame, text="Waiting for sound clip")
-proglabel.pack(pady=5, padx=5)
 
 # Filter frame
 FilterFrame = LabelFrame(Overframe, text="Choose filters", padx=5, pady=5)
@@ -472,13 +453,11 @@ PlayImage.config(state=DISABLED)
 
 SaveImage = Button(BtnFrame, text="Save Image", padx=5, pady=5, command=saveimage)
 SaveImage.grid(row=0, column=1)
-
-# SaveImage.config(state=DISABLED)
+SaveImage.config(state=DISABLED)
 
 FullImage = Button(BtnFrame, text="Show full image", pady=5, padx=5, command=fullimage)
 FullImage.grid(row=0, column=2)
 FullImage.config(state=DISABLED)
-
 
 # Small Images
 SmallImages = LabelFrame(F, text="Instances")
@@ -490,7 +469,7 @@ canvas.grid(row=0, column=0, sticky="nsew")
 scroll = Scrollbar(SmallImages, command=canvas.yview)
 scroll.grid(row=0, column=1, sticky="ns")
 
-scrollframe = Frame(canvas, pady=5, padx=5)
+scrollframe = Frame(canvas, pady=5, padx=0)
 
 canvas.create_window((0, 0), window=scrollframe, anchor="nw")
 canvas.configure(yscrollcommand=scroll.set)
@@ -499,24 +478,6 @@ def on_frame_configure(event):
     canvas.configure(scrollregion=canvas.bbox("all"))
 
 scrollframe.bind("<Configure>", on_frame_configure)
-
-SImage2 = Label(scrollframe, text="", padx=10, pady=5, width=15)
-SImage2.grid(row=1, column=0)
-
-text2 = Label(scrollframe, text="", padx=10, pady=5, width=15)
-text2.grid(row=1, column=1)
-
-SImage3 = Label(scrollframe, text="", padx=10, pady=5, width=15)
-SImage3.grid(row=2, column=0)
-
-text3 = Label(scrollframe, text="", padx=10, pady=5, width=15)
-text3.grid(row=2, column=1)
-
-SImage4 = Label(scrollframe, text="peekaboo", padx=10, pady=5, width=15)
-SImage4.grid(row=3, column=0)
-
-text4 = Label(scrollframe, text="", padx=10, pady=5, width=15)
-text4.grid(row=3, column=1)
 
 SmallImages.grid_rowconfigure(0, weight=1)
 SmallImages.grid_columnconfigure(0, weight=1)
