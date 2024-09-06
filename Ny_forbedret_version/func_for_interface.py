@@ -36,7 +36,7 @@ def displayimage():
     Resize = CV2Image.resize((300, 300), PIL.Image.LANCZOS)
     LoadImage = ImageTk.PhotoImage(Resize)
 
-    return LoadImage, CV2Image
+    return LoadImage
 
 # def PlacingNumbers():
 #     global NumberPlacement

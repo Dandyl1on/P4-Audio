@@ -99,7 +99,7 @@ def selectimage():
     else:
         PlaceImage.config(image=func_for_interface.LoadImage)
 
-    ogImage = ImageTk.PhotoImage(func_for_interface.CV2Image)
+    ogImage = func_for_interface.LoadImage
 
     if originalImage is not None:
         originalImage.config(image=ogImage)

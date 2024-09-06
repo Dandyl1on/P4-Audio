@@ -150,6 +150,7 @@ def infoFunc():
 
 
     magnitude_db_max, magnitude_db_min, sr, D = construct_image_from_audio(audio_path)
+    reconstruct_audio_from_image(magnitude_db_max, magnitude_db_min, sr, D, Path)
 
     return magnitude_db_max, magnitude_db_min, sr, D
 
