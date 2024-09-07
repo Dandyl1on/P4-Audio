@@ -66,7 +66,7 @@ def bandimage(high, low):
     global FImage
     global FLoad
     global CV2Image
-    global FilterLabel
+    # global FilterLabel
 
     stop()
     print(high, low)
