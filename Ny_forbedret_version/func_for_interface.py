@@ -46,9 +46,9 @@ def displayimage():
 #
 #         NumberPlacement += 1
 
-def play():
+def play(file):
     # Plays the sound in the load method
-    pygame.mixer.music.load(Interface.File)
+    pygame.mixer.music.load(file)
     pygame.mixer.music.play(loops=0)
 
 def playfilter():
@@ -134,7 +134,7 @@ def equalimage(bass, mid, uppermid, high):
 
     return FLoad
 
-def fullimage():
+def fullimage(root):
     global CV2Image
     global Full
 
@@ -152,23 +152,3 @@ def fullimage():
     NewImage = Label(LargeImage, image=Full)
     NewImage.pack(pady=10, padx=10)
 
-def saveimage():
-    global CV2Image
-    global SImage
-    global SmallImageLoad
-    global File
-    global Placement
-
-    SImage = Label(scrollframe)
-    SImage.grid(row=Placement, column=0, padx=0)
-
-    text = Label(scrollframe, text=File, padx=0, pady=5, width=25)
-    text.grid(row=Placement, column=1)
-
-    Size = CV2Image.resize((50, 50), PIL.Image.LANCZOS)
-    SmallImageLoad = ImageTk.PhotoImage(Size)
-
-    photo_image_references.append(SmallImageLoad)
-
-    SImage.config(image=SmallImageLoad)
-    Placement += 1

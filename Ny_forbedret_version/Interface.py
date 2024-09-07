@@ -38,6 +38,9 @@ root = Tk()
 root.title("Modifun")
 root.geometry("700x600")
 
+def getroot():
+    func_for_interface.fullimage(root)
+
 # File is the original sound file chosen by the user
 File = None
 # CV2Image is the image made from the Equalloudness transformation script, so it can be opened in tkinter
@@ -52,7 +55,6 @@ BandpassImageDisplay = None
 NotchImageDisplay = None
 EqualizationImageDisplay = None
 
-
 # StartImage ensures that the unfilted opened image can be created and not garbage collected
 originalImage = None
 Full = None
@@ -61,6 +63,8 @@ Full = None
 BandpassFrame = None
 NotchFrame = None
 EqualFrame = None
+
+
 
 # Creates a sound player from pygame
 pygame.mixer.init()
@@ -114,6 +118,10 @@ def selectimage():
     EqualBtn.config(state=NORMAL)
     SaveImage.config(state=NORMAL)
     # PlacingNumbers()
+
+# Play music passes the File variable to the play function inside func_for_interface
+def playmusic():
+    func_for_interface.play(File)
 
 def createbandpassframe():
     global BandpassFrame
@@ -317,6 +325,27 @@ def destroyequalframe():
         EqualFrame.destroy()
         EqualFrame = None
 
+def saveimage():
+    global CV2Image
+    global SImage
+    global SmallImageLoad
+    global File
+    global Placement
+
+    SImage = Label(scrollframe)
+    SImage.grid(row=Placement, column=0, padx=0)
+
+    text = Label(scrollframe, text=File, padx=0, pady=5, width=25)
+    text.grid(row=Placement, column=1)
+
+    Size = func_for_interface.CV2Image.resize((50, 50), PIL.Image.LANCZOS)
+    SmallImageLoad = ImageTk.PhotoImage(Size)
+
+    photo_image_references.append(SmallImageLoad)
+
+    SImage.config(image=SmallImageLoad)
+    Placement += 1
+
 
 # Creates a menu in the interface, where the select function is called
 menu = Menu(root)
@@ -371,15 +400,16 @@ F.pack(side=BOTTOM)
 ImageLabel = Label(UnderFrame, text="Your image will be displayed here", width=42, height=24)
 ImageLabel.pack(side=TOP)
 
-PlayImage = Button(BtnFrame, text="Play sound", pady=5, padx=15, command=func_for_interface.play)
+PlayImage = Button(BtnFrame, text="Play sound", pady=5, padx=15, command=playmusic)
 PlayImage.grid(row=0, column=0)
 #PlayImage.config(state=DISABLED)
+
 
 SaveImage = Button(BtnFrame, text="Save Image", padx=5, pady=5, command=saveimage)
 SaveImage.grid(row=0, column=1)
 #SaveImage.config(state=DISABLED)
 
-FullImage = Button(BtnFrame, text="Show full image", pady=5, padx=5, command=fullimage)
+FullImage = Button(BtnFrame, text="Show full image", pady=5, padx=5, command=getroot)
 FullImage.grid(row=0, column=2)
 #FullImage.config(state=DISABLED)
 
