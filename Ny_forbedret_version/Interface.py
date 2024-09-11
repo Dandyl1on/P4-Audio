@@ -79,7 +79,7 @@ def selectimage():
         initialdir="C:/Users/marku/OneDrive - Aalborg Universitet/Githubs/P4-Audio/Ny_forbedret_version", title="select a file",
         filetypes=(("WAV files", "*.wav"), ("All files", "*"))
     )
-    # Makes the filename into File variable, so it can be used by other functions that isn´t tkinter
+    # Makes the filename into File variable, so it can be used by other functions that isnÂ´t tkinter
     File = os.path.basename(root.filename)
     # Sets the audio_path in Equalloudness_transformation to the file
     Equalloudness_transformation.audio_path = root.filename

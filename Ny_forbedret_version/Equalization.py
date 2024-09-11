@@ -2,6 +2,7 @@ import numpy as np
 from PIL import Image
 import soundfile as sf
 import librosa
+from Equalloudness_transformation import infoFunc
 
 low = 0.7
 mid = 0.9
@@ -54,16 +55,15 @@ def mainfunc():
     # Example usage:
     image_path = 'combined_image.png'
     output_path = 'equalized_image.png'
-    sr = 22050  # Sample rate of the original audio
+
 
     # Define the frequency bands and corresponding gain factors
     eq_settings = {
-        (0, 200): low,  # Boost low frequencies (bass)
-        (200, 2000): mid,  # Leave mid frequencies unchanged
-        (2000, 5000): upper,  # Reduce upper mids
-        (5000, 11025): high  # Slightly boost high frequencies (treble)
+        (0, 200): low,  # low frequencies (bass)
+        (200, 2000): mid,  # mid frequencies
+        (2000, 5000): upper,  # upper mid frequencies
+        (5000, 11025): high  # high frequencies (treble)
     }
-
     apply_equalization(image_path, eq_settings, sr, output_path)
 
 

@@ -1,58 +1,58 @@
+import cv2
 import numpy as np
-from PIL import Image
-import soundfile as sf
-import librosa
 
 
-def frequency_based_noise_reduction(image_path, reduction_factor, freq_ranges, sr, output_path):
+def add_gaussian_noise(image, mean=15, sigma=25):
     """
-    Apply frequency-based noise reduction by attenuating specific frequency ranges in the magnitude image.
+    Add Gaussian noise to the top half of an image and make it grayscale.
 
-    Parameters:
-    - image_path: Path to the input image (combined magnitude and phase).
-    - reduction_factor: Factor by which to attenuate the unwanted frequencies (e.g., 0.5 to reduce by 50%).
-    - freq_ranges: List of tuples specifying frequency ranges to attenuate [(low1, high1), (low2, high2)].
-    - sr: Sample rate of the audio signal (needed to map frequency ranges).
-    - output_path: Path to save the output image.
+    :param image: Input image
+    :param mean: Mean of the Gaussian noise
+    :param sigma: Standard deviation of the Gaussian noise
+    :return: Noisy image
     """
-    # Load the combined image
-    combined_img = Image.open(image_path)
-    combined_img_np = np.array(combined_img)
-    height, width = combined_img_np.shape
-    half_height = height // 2
+    # Convert image to float32
+    image = image.astype(np.float32)
 
-    # Separate magnitude and phase
-    magnitude_img_np = combined_img_np[:half_height, :].astype(np.float64)  # Convert to float for processing
-    phase_img_np = combined_img_np[half_height:, :]
+    # Generate Gaussian noise for the grayscale image
+    noise = np.random.normal(mean, sigma, image.shape[:2])
 
-    # Calculate the frequency for each row in the magnitude image
-    freqs = np.linspace(0, sr / 2, half_height)
+    # Create a mask for the top half
+    height, width = image.shape[:2]
+    mask = np.zeros((height, width), dtype=np.float32)
+    mask[:height // 2] = 1  # Mask for top half
 
-    # Apply noise reduction in the specified frequency ranges
-    for low_freq, high_freq in freq_ranges:
-        # Identify rows corresponding to the specified frequency range
-        freq_mask = (freqs >= low_freq) & (freqs <= high_freq)
+    # Apply noise only to the top half of the image
+    noisy_image = image.copy()
+    noisy_image += mask[:, :, np.newaxis] * noise[:, :, np.newaxis]
 
-        # Attenuate the magnitudes in those rows by the reduction factor
-        magnitude_img_np[freq_mask, :] *= reduction_factor
+    # Clip the pixel values to stay within the valid range [0, 255]
+    noisy_image = np.clip(noisy_image, 0, 255)
 
-    # Convert back to uint8 while ensuring values are within the 0-255 range
-    magnitude_img_np = np.clip(magnitude_img_np, 0, 255).astype(np.uint8)
-
-    # Combine the modified magnitude image with the unchanged phase image
-    new_combined_img = Image.new('L', (width, height))
-    new_combined_img.paste(Image.fromarray(magnitude_img_np), (0, 0))
-    new_combined_img.paste(Image.fromarray(phase_img_np), (0, half_height))
-    new_combined_img.save(output_path)
-
-    print(f"Noise-reduced image saved as {output_path}")
+    # Convert image back to uint8
+    return noisy_image.astype(np.uint8)
 
 
-# Example usage:
-image_path = 'equalized_image.png'
-output_path = 'frequency_based_noise_reduced_image.png'
-reduction_factor = 0.5  # Attenuate by 50%
-sr = 44100  # Sample rate of the original audio
-freq_ranges = [(0, 1000), (1000, 4000)]  # Low and high frequencies to reduce noise
+# Load the image
+image_path = 'combined_image.png'
+image = cv2.imread(image_path, cv2.IMREAD_COLOR)
 
-frequency_based_noise_reduction(image_path, reduction_factor, freq_ranges, sr, output_path)
+# Ensure the image is in RGB format
+image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+# Add Gaussian noise to the top half
+noisy_image = add_gaussian_noise(image)
+
+# Convert noisy image to grayscale
+noisy_image_gray = cv2.cvtColor(noisy_image, cv2.COLOR_RGB2GRAY)
+
+# Save the noisy image as PNG
+cv2.imwrite('noisy_image.png', cv2.cvtColor(noisy_image, cv2.COLOR_RGB2BGR))
+cv2.imwrite('noisy_image_gray.png', noisy_image_gray)
+
+# Display the images
+cv2.imshow('Original Image', image)
+cv2.imshow('Noisy Image', noisy_image)
+cv2.imshow('Noisy Image (Gray)', noisy_image_gray)
+cv2.waitKey(0)
+cv2.destroyAllWindows()

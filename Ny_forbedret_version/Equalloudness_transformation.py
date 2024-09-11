@@ -5,12 +5,14 @@ import soundfile as sf
 import os
 from scipy.interpolate import interp1d
 
-audio_path = "GI_GMF_B3_353_20140520_n.wav"
+audio_path = "numero 1.wav"
 Path = "combined_image.png"
 
 
 def infoFunc():
-    
+
+    global magnitude_db_max
+
     def reshape_to_custom(array, column_length):
         """ Reshape the array to have a fixed number of columns and calculate rows accordingly. """
         num_elements = array.size
@@ -123,7 +125,7 @@ def infoFunc():
 
         # Denormalize magnitude
         magnitude_db = magnitude_normalized * (magnitude_db_max - magnitude_db_min) + magnitude_db_min
-        magnitude = 10 ** (magnitude_db / 20)  # Convert dB back to amplitude
+        magnitude = 10 ** (magnitude_db / 20)  # Convert dB  back to amplitude
 
         # Apply the inverse equal-loudness contour
         magnitude = apply_inverse_equal_loudness_contour(magnitude, sr, scale_factor=3.0)
@@ -154,7 +156,3 @@ def infoFunc():
 
     return magnitude_db_max, magnitude_db_min, sr, D
 
-    # If you still want to keep this block for script execution, move it out of the function
-    if __name__ == "__main__":
-        magnitude_db_max, magnitude_db_min, sr, D = infoFunc()
-        reconstruct_audio_from_image(magnitude_db_max, magnitude_db_min, sr, D)
