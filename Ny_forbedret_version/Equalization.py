@@ -4,7 +4,7 @@ import soundfile as sf
 import librosa
 from Equalloudness_transformation import infoFunc
 
-magnitude_db_max, magnitude_db_min, samplerate, D = infoFunc()
+samplerate= infoFunc()
 
 sr = samplerate
 low = 0.7
