@@ -27,16 +27,18 @@ def displayimage():
     global CV2Image
     global Start
     global StartImage
+    global Displayed
 
     CV2Image = cv2.imread("combined_image.png", cv2.IMREAD_UNCHANGED)
     if CV2Image.dtype == np.uint16:
         CV2Image = (CV2Image / 256).astype('uint8')
     CV2Image = cv2.cvtColor(CV2Image, cv2.COLOR_BGR2RGB)
     CV2Image = PIL.Image.fromarray(CV2Image)
+    Displayed = ImageTk.PhotoImage(CV2Image)
     Resize = CV2Image.resize((300, 300), PIL.Image.LANCZOS)
     LoadImage = ImageTk.PhotoImage(Resize)
 
-    return LoadImage
+    return LoadImage, Displayed
 
 # def PlacingNumbers():
 #     global NumberPlacement

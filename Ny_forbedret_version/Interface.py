@@ -94,7 +94,7 @@ def selectimage():
 
     # Preview
     # Makes sure the LoadImage variable can be displayed into a Label and not garbage collected
-    # This one with PlaceImage is for the image in the middle of the program
+    # This one with PlaceImage is for the preview
     if PlaceImage is None:
         PlaceImage = Label(UnderFrame, image=func_for_interface.LoadImage)
         PlaceImage.pack()
@@ -105,12 +105,11 @@ def selectimage():
     # Filter frame
     # Makes sure the LoadImage variable can be displayed into a Label and not garbage collected
     # This one with originalImage is for the image without any filter changes
-    ogimage = func_for_interface.LoadImage
     # ensures that the user can choose other images and display that image
     if originalImage is not None:
-        originalImage.config(image=ogimage)
+        originalImage.config(image=func_for_interface.Displayed)
     else:
-        originalImage = Label(FilterLabel, image=ogimage)
+        originalImage = Label(FilterLabel, image=func_for_interface.Displayed)
         originalImage.pack()
 
     # Returns buttons to normal state so users can press them
@@ -120,6 +119,7 @@ def selectimage():
     NotchBtn.config(state=NORMAL)
     EqualBtn.config(state=NORMAL)
     SaveImage.config(state=NORMAL)
+    UniPlay.config(state=NORMAL)
 
 
 # Play music passes the File variable to the play function inside func_for_interface
@@ -155,20 +155,21 @@ def createbandpassframe():
     BandpassFrame = LabelFrame(FilterFrame, text="Bandpass", font="BOLD")
     BandpassFrame.pack()
 
-    BandLowSlider = Scale(BandpassFrame, from_=0, to=22050, orient=HORIZONTAL, length=200, command=lowsliderupdate)
+    BandLowSlider = Scale(BandpassFrame, from_=0, to=11025, orient=HORIZONTAL, length=200, command=lowsliderupdate)
     BandLowSlider.pack(padx=5, pady=5)
-    Label2 = Label(BandpassFrame, text="Adjust lowcut frequency")
+    Label2 = Label(BandpassFrame, text="Adjust low cutoff frequency")
     Label2.pack()
 
-    BandHighSlider = Scale(BandpassFrame, from_=0, to=22050, orient=HORIZONTAL, length=200, command=highsliderupdate)
+    BandHighSlider = Scale(BandpassFrame, from_=0, to=11025, orient=HORIZONTAL, length=200, command=highsliderupdate)
     BandHighSlider.pack(padx=5, pady=5)
-    Label1 = Label(BandpassFrame, text="Adjust highcut frequency")
+    Label1 = Label(BandpassFrame, text="Adjust high cutoff frequency")
     Label1.pack()
 
     def getHighandLow():
         # accesses the variable for displaying purposes (was none to avoid garbage collection)
         global BandpassImageDisplay
-        global FLoad
+        global NotchImageDisplay
+        global EqualizationImageDisplay
         global FilterLabel
 
         # Passes the current values of the Sliders to the bandimage function to create the bandpass image
@@ -177,22 +178,11 @@ def createbandpassframe():
         bandimage(high, low)
 
         # Removes the labels displaying the image and text
-        FilterLabel.destroy()
-        originalImage.destroy()
-
-        # Displays the now bandpass image with the high, low values from the sliders
-        if BandpassImageDisplay is None:
-            BandpassImageDisplay = Label(FilteredImage, image=func_for_interface.FLoad)
-            BandpassImageDisplay.pack(side=RIGHT)
-        # ensures that the user can choose other values and display that image
-        else:
-            BandpassImageDisplay.config(image=func_for_interface.FLoad)
+        originalImage.config(image=func_for_interface.FLoad)
 
     # Tkinter code for creating the buttons
     Apply = Button(BandpassFrame, text="Apply filter", command=getHighandLow)
-    Apply.pack(side=LEFT)
-    Apply = Button(BandpassFrame, text="Play sound", command=playfilter)
-    Apply.pack(side=RIGHT)
+    Apply.pack()
 
     # destroys the empty label that makes the size of the "choose filters" frame
     EmptyLabelFilter.destroy()
@@ -210,43 +200,34 @@ def createbandpassframe():
 
 def createnotchframe():
     global NotchFrame
-    global NotchSlider
-    global BandwidthSlider
 
     NotchFrame = LabelFrame(FilterFrame, text="Notch", font="bold")
     NotchFrame.pack()
 
-    NotchSlider = Scale(NotchFrame, from_=0, to=22050, orient=HORIZONTAL, length=200)
+    NotchSlider = Scale(NotchFrame, from_=0, to=11025, orient=HORIZONTAL, length=200)
     NotchSlider.pack(padx=5, pady=5)
     Label1 = Label(NotchFrame, text="Adjust Notch")
     Label1.pack()
-    BandwidthSlider = Scale(NotchFrame, from_=0, to=22050, orient=HORIZONTAL, length=200)
+    BandwidthSlider = Scale(NotchFrame, from_=0, to=11025, orient=HORIZONTAL, length=200)
     BandwidthSlider.pack(padx=5, pady=5)
     Label2 = Label(NotchFrame, text="Adjust Bandwidth")
     Label2.pack()
 
     def getnotchandbandwidth():
         global NotchImageDisplay
-        global FLoad
+        global EqualizationImageDisplay
+        global BandpassImageDisplay
         global FilterLabel
 
         notch = NotchSlider.get()
         bandwidth = BandwidthSlider.get()
         notchimage(notch, bandwidth)
 
-        FilterLabel.destroy()
-        originalImage.destroy()
-
-        if NotchImageDisplay is None:
-            NotchImageDisplay = Label(FilteredImage, image=func_for_interface.FLoad)
-            NotchImageDisplay.pack(side=RIGHT)
-        else:
-            NotchImageDisplay.config(image=func_for_interface.FLoad)
+        originalImage.config(image=func_for_interface.FLoad)
 
     Apply = Button(NotchFrame, text="Apply filter", command=getnotchandbandwidth)
-    Apply.pack(side=LEFT)
-    Apply = Button(NotchFrame, text="Play sound", command=playfilter)
-    Apply.pack(side=RIGHT)
+    Apply.pack()
+
 
     BandBtn.config(state=NORMAL)
     NotchBtn.config(state=DISABLED)
@@ -260,10 +241,6 @@ def createnotchframe():
 
 def createequalizationframe():
     global EqualFrame
-    global BassSlider
-    global MidSlider
-    global UppermidSlider
-    global HigherSlider
 
     EqualFrame = LabelFrame(FilterFrame, text="Equalization", font="bold")
     EqualFrame.pack()
@@ -287,7 +264,8 @@ def createequalizationframe():
 
     def getequalizationsliders():
         global EqualizationImageDisplay
-        global FLoad
+        global BandpassImageDisplay
+        global NotchImageDisplay
         global FilterLabel
 
         bass = BassSlider.get()
@@ -296,19 +274,10 @@ def createequalizationframe():
         high = HigherSlider.get()
         equalimage(bass, mid, uppermid, high)
 
-        FilterLabel.destroy()
-        originalImage.destroy()
-
-        if EqualizationImageDisplay is None:
-            EqualizationImageDisplay = Label(FilteredImage, image=func_for_interface.FLoad)
-            EqualizationImageDisplay.pack(side=RIGHT)
-        else:
-            EqualizationImageDisplay.config(image=func_for_interface.FLoad)
+        originalImage.config(image=func_for_interface.FLoad)
 
     Apply = Button(EqualFrame, text="Apply filter", command=getequalizationsliders)
-    Apply.pack(side=LEFT)
-    Apply = Button(EqualFrame, text="Play sound", command=playfilter)
-    Apply.pack(side=RIGHT)
+    Apply.pack()
 
     BandBtn.config(state=NORMAL)
     NotchBtn.config(state=NORMAL)
@@ -389,15 +358,17 @@ BtnFrame.pack(side=BOTTOM)
 
 BandBtn = Button(BtnFrame, text="Bandpass Filter", command=createbandpassframe)
 BandBtn.grid(row=0, column=0, padx=5)
-#BandBtn.config(state=DISABLED)
+BandBtn.config(state=DISABLED)
+
 NotchBtn = Button(BtnFrame, text="Notch Filter", command=createnotchframe)
 NotchBtn.grid(row=0, column=1, padx=5)
-#NotchBtn.config(state=DISABLED)
+NotchBtn.config(state=DISABLED)
+
 EqualBtn = Button(BtnFrame, text="Equalization Filter", command=createequalizationframe)
 EqualBtn.grid(row=0, column=2, padx=5)
-#EqualBtn.config(state=DISABLED)
+EqualBtn.config(state=DISABLED)
 
-# Display frame
+# Preview frame
 DisplayFrame = LabelFrame(Overframe, text="Preview", pady=5, padx=5)
 DisplayFrame.grid(row=1, column=5)
 
@@ -406,27 +377,27 @@ UnderFrame.pack()
 
 BtnFrame = Frame(UnderFrame, pady=5, padx=5)
 BtnFrame.pack(side=BOTTOM)
-F = Frame(DisplayFrame, pady=5, padx=5)
-F.pack(side=BOTTOM)
+InstancesFrame = Frame(DisplayFrame, pady=5, padx=5)
+InstancesFrame.pack(side=BOTTOM)
 
-ImageLabel = Label(UnderFrame, text="Your image will be displayed here", width=42, height=24)
+ImageLabel = Label(UnderFrame, text="Your image will be displayed", width=42, height=24)
 ImageLabel.pack(side=TOP)
 
 PlayImage = Button(BtnFrame, text="Play sound", pady=5, padx=15, command=playmusic)
 PlayImage.grid(row=0, column=0)
-#PlayImage.config(state=DISABLED)
+PlayImage.config(state=DISABLED)
 
 
 SaveImage = Button(BtnFrame, text="Save Image", padx=5, pady=5, command=saveimage)
 SaveImage.grid(row=0, column=1)
-#SaveImage.config(state=DISABLED)
+SaveImage.config(state=DISABLED)
 
 FullImage = Button(BtnFrame, text="Show full image", pady=5, padx=5, command=getroot)
 FullImage.grid(row=0, column=2)
-#FullImage.config(state=DISABLED)
+FullImage.config(state=DISABLED)
 
 # Small Images
-SmallImages = LabelFrame(F, text="Instances")
+SmallImages = LabelFrame(InstancesFrame, text="Instances")
 SmallImages.grid(row=2, column=4)
 
 canvas = Canvas(SmallImages, height=70, width=260)
@@ -457,5 +428,13 @@ FilterLabel.pack(side=RIGHT)
 
 NumberFrame = Frame(FilteredImage, height=32)
 NumberFrame.pack()
+
+# Universal frame
+UniversalFrame = Frame(Overframe, width=600, padx=5, pady=5)
+UniversalFrame.grid(row=2, column=3)
+
+UniPlay = Button(UniversalFrame, text="Play Image", command=func_for_interface.playfilter)
+UniPlay.pack()
+UniPlay.config(state=DISABLED)
 
 mainloop()
