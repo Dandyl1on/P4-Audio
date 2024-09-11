@@ -4,10 +4,14 @@ import soundfile as sf
 import librosa
 from Equalloudness_transformation import infoFunc
 
+magnitude_db_max, magnitude_db_min, samplerate, D = infoFunc()
+
+sr = samplerate
 low = 0.7
 mid = 0.9
 upper = 1.4
 high = 1.3
+
 def mainfunc():
     def apply_equalization(image_path, eq_settings, sr, output_path):
         """
@@ -62,7 +66,7 @@ def mainfunc():
         (0, 200): low,  # low frequencies (bass)
         (200, 2000): mid,  # mid frequencies
         (2000, 5000): upper,  # upper mid frequencies
-        (5000, 11025): high  # high frequencies (treble)
+        (5000, 20000): high  # high frequencies (treble)
     }
     apply_equalization(image_path, eq_settings, sr, output_path)
 

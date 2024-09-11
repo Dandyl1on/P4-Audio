@@ -8,10 +8,9 @@ from scipy.interpolate import interp1d
 audio_path = "numero 1.wav"
 Path = "combined_image.png"
 
-
 def infoFunc():
 
-    global magnitude_db_max
+    global magnitude_db_max, sr
 
     def reshape_to_custom(array, column_length):
         """ Reshape the array to have a fixed number of columns and calculate rows accordingly. """
