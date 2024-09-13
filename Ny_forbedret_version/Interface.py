@@ -246,21 +246,40 @@ def createequalizationframe():
     EqualFrame.pack()
 
     BassSlider = Scale(EqualFrame, from_=0, to=2, orient=HORIZONTAL, length=200, resolution=0.1)
-    BassSlider.pack(padx=5, pady=5)
+    BassSlider.grid(row=0, column=0)
     Label1 = Label(EqualFrame, text="Adjust low frequencies")
-    Label1.pack()
+    Label1.grid(row=1, column=0)
+    Range1 = Scale(EqualFrame, from_=0, to=5000, orient=HORIZONTAL)
+    Range1.grid(row=0, column=1)
+    Range1Label = Label(EqualFrame, text="Adjust range 1")
+    Range1Label.grid(row=1, column=1)
+
     MidSlider = Scale(EqualFrame, from_=0, to=2, orient=HORIZONTAL, length=200, resolution=0.1)
-    MidSlider.pack(padx=5, pady=5)
+    MidSlider.grid(row=2, column=0)
     Label2 = Label(EqualFrame, text="Adjust mid frequencies")
-    Label2.pack()
+    Label2.grid(row=3, column=0)
+    Range2 = Scale(EqualFrame, from_=0, to=5000, orient=HORIZONTAL)
+    Range2.grid(row=2, column=1)
+    Range2Label = Label(EqualFrame, text="Adjust range 2")
+    Range2Label.grid(row=3, column=1)
+
     UppermidSlider = Scale(EqualFrame, from_=0, to=2, orient=HORIZONTAL, length=200, resolution=0.1)
-    UppermidSlider.pack(padx=5, pady=5)
+    UppermidSlider.grid(row=4, column=0)
     Label2 = Label(EqualFrame, text="Adjust uppermid frequencies")
-    Label2.pack()
+    Label2.grid(row=5, column=0)
+    Range3 = Scale(EqualFrame, from_=0, to=5000, orient=HORIZONTAL)
+    Range3.grid(row=4, column=1)
+    Range3Label = Label(EqualFrame, text="Adjust range 3")
+    Range3Label.grid(row=5, column=1)
+
     HigherSlider = Scale(EqualFrame, from_=0, to=2, orient=HORIZONTAL, length=200, resolution=0.1)
-    HigherSlider.pack(padx=5, pady=5)
+    HigherSlider.grid(row=6, column=0)
     Label2 = Label(EqualFrame, text="Adjust high frequencies")
-    Label2.pack()
+    Label2.grid(row=7, column=0)
+    Range4 = Scale(EqualFrame, from_=0, to=5000, orient=HORIZONTAL)
+    Range4.grid(row=6, column=1)
+    Range3Label = Label(EqualFrame, text="Adjust range 4")
+    Range3Label.grid(row=7, column=1)
 
     def getequalizationsliders():
         global EqualizationImageDisplay
@@ -272,12 +291,18 @@ def createequalizationframe():
         mid = MidSlider.get()
         uppermid = UppermidSlider.get()
         high = HigherSlider.get()
-        equalimage(bass, mid, uppermid, high)
+        range1 = Range1.get()
+        range2 = Range2.get()
+        range3 = Range3.get()
+        range4 = Range4.get()
+        equalimage(bass, mid, uppermid, high, range1, range2, range3, range4)
 
         originalImage.config(image=func_for_interface.FLoad)
 
     Apply = Button(EqualFrame, text="Apply filter", command=getequalizationsliders)
-    Apply.pack()
+    Apply.grid(row=4, column=2)
+
+    EmptyLabel3.config(width=10)
 
     BandBtn.config(state=NORMAL)
     NotchBtn.config(state=NORMAL)
@@ -339,12 +364,12 @@ Overframe = Frame(root, background="grey35")
 Overframe.pack(fill="both", expand=True)
 
 # Empty used for layout mangement
-EmptyLabel = Label(Overframe, width=20, height=2, background="grey35")
-EmptyLabel.grid(row=0, column=4)
-EmptyLabel = Label(Overframe, width=3, height=2, background="grey35")
-EmptyLabel.grid(row=0, column=0)
-EmptyLabel = Label(Overframe, width=20, height=2, background="grey35")
-EmptyLabel.grid(row=0, column=2)
+EmptyLabel1 = Label(Overframe, width=20, height=2, background="grey35")
+EmptyLabel1.grid(row=0, column=4)
+EmptyLabel2 = Label(Overframe, width=3, height=2, background="grey35")
+EmptyLabel2.grid(row=0, column=0)
+EmptyLabel3 = Label(Overframe, width=20, height=2, background="grey35")
+EmptyLabel3.grid(row=0, column=2)
 
 # Filter frame
 FilterFrame = LabelFrame(Overframe, text="Choose filters", padx=5, pady=5)

@@ -10,7 +10,7 @@ Path = "combined_image.png"
 
 def infoFunc():
 
-    global magnitude_db_max, sr
+    global magnitude_db_max
 
     def reshape_to_custom(array, column_length):
         """ Reshape the array to have a fixed number of columns and calculate rows accordingly. """
@@ -81,7 +81,7 @@ def infoFunc():
 
     def construct_image_from_audio(audio_path, output_image_path='combined_image.png'):
         # Load audio file and compute STFT
-        y, sr = librosa.load(audio_path, sr=None)
+        y, sr = librosa.load(audio_path, sr=None)# sr = None
         D = librosa.stft(y)
         magnitude = np.abs(D)
         phase = np.angle(D)
@@ -149,9 +149,7 @@ def infoFunc():
         sf.write(output_audio_path, y_reconstructed, sr)
         print(f"Reconstructed audio saved to {output_audio_path}")
 
-
     magnitude_db_max, magnitude_db_min, sr, D = construct_image_from_audio(audio_path)
     reconstruct_audio_from_image(magnitude_db_max, magnitude_db_min, sr, D, Path)
-
     return magnitude_db_max, magnitude_db_min, sr, D
 

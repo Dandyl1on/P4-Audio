@@ -4,13 +4,17 @@ import soundfile as sf
 import librosa
 from Equalloudness_transformation import infoFunc
 
-samplerate= infoFunc()
+samplerate, _, _, _ = infoFunc()
 
 sr = samplerate
 low = 0.7
 mid = 0.9
 upper = 1.4
 high = 1.3
+range1 = 1
+range2 = 2
+range3 = 3
+range4 = 4
 
 def mainfunc():
     def apply_equalization(image_path, eq_settings, sr, output_path):
@@ -54,19 +58,17 @@ def mainfunc():
         new_combined_img.save(output_path)
 
         print(f"Equalized image saved as {output_path}")
-
-
+        print(eq_settings)
     # Example usage:
     image_path = 'combined_image.png'
     output_path = 'equalized_image.png'
 
-
     # Define the frequency bands and corresponding gain factors
     eq_settings = {
-        (0, 200): low,  # low frequencies (bass)
+        (0, range1): low,  # low frequencies (bass)
         (200, 2000): mid,  # mid frequencies
         (2000, 5000): upper,  # upper mid frequencies
-        (5000, 20000): high  # high frequencies (treble)
+        (5000, 11025): high  # high frequencies (treble)
     }
     apply_equalization(image_path, eq_settings, sr, output_path)
 

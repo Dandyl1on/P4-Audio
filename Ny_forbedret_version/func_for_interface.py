@@ -113,7 +113,7 @@ def notchimage(notch, bandwidth):
 
     return FLoad
 
-def equalimage(bass, mid, uppermid, high):
+def equalimage(bass, mid, uppermid, high, range1, range2, range3, range4):
     global FImage
     global FLoad
     global CV2Image
@@ -124,6 +124,10 @@ def equalimage(bass, mid, uppermid, high):
     Equalization.mid = mid
     Equalization.upper = uppermid
     Equalization.high = high
+    Equalization.range1 = range1
+    Equalization.range2 = range2
+    Equalization.range3 = range3
+    Equalization.range4 = range4
 
     Equalization.mainfunc()
 
