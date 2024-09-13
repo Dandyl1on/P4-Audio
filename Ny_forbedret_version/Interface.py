@@ -371,6 +371,25 @@ EmptyLabel2.grid(row=0, column=0)
 EmptyLabel3 = Label(Overframe, width=20, height=2, background="grey35")
 EmptyLabel3.grid(row=0, column=2)
 
+# Image procsses frame
+Processes = LabelFrame(Overframe, text="Choose Image proccessing filter", pady=5, padx=5)
+Processes.grid(row=2, column=1)
+
+EmptyLabelProcess = Label(Processes, text="", width=31, height=10)
+EmptyLabelProcess.pack(side=TOP)
+
+BtnFrameProces = Frame(Processes, pady=5)
+BtnFrameProces.pack(side=BOTTOM)
+
+NoiseReduc = Button(BtnFrameProces, text="Noise reduction filter")
+NoiseReduc.grid(row=0, column=0, padx=5)
+
+Sharp = Button(BtnFrameProces, text="Sharpening filter")
+Sharp.grid(row=0, column=1, padx=5)
+
+Smooth = Button(BtnFrameProces, text="Smoothing filter")
+Smooth.grid(row=0, column=2, padx=5)
+
 # Filter frame
 FilterFrame = LabelFrame(Overframe, text="Choose filters", padx=5, pady=5)
 FilterFrame.grid(row=1, column=1)
