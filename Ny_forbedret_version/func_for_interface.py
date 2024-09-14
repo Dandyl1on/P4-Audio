@@ -24,6 +24,9 @@ from sharpening_filter import *
 import Smoothing
 from Smoothing import *
 
+import Noise
+from Noise import *
+
 NumberPlacement = 0
 
 def displayimage():
@@ -80,9 +83,9 @@ def bandimage(high, low):
     global FImage
     global FLoad
     global CV2Image
-    # global FilterLabel
 
     stop()
+
     print(high, low)
     all_filters.high_freq = high
     all_filters.low_freq = low
@@ -212,3 +215,24 @@ def Smoothpathchange(Kernelval, Weigthval):
     SmoothImageFinal = ImageTk.PhotoImage(Smoothresize)
 
     return SmoothImageFinal
+
+def Noisepathchange(Meanval, Sigmaval):
+    global NoiseImageFinal
+    stop()
+
+    Noise.image = CV2Image
+    Noise.add_gaussian_noise(Meanval, Sigmaval)
+
+    NoiseImage = cv2.imread("Noise.png", cv2.IMREAD_UNCHANGED)
+    if NoiseImage.dtype == np.uint16:
+        NoiseImage = (CV2Image / 256).astype('uint8')
+    NoiseImage = cv2.cvtColor(NoiseImage, cv2.COLOR_BGR2RGB)
+    NoiseImage = PIL.Image.fromarray(NoiseImage)
+
+    Equalloudness_transformation.Path = "Noise.png"
+    Equalloudness_transformation.infoFunc()
+
+    Noiseresize = NoiseImage.resize((400, 400), PIL.Image.LANCZOS)
+    NoiseImageFinal = ImageTk.PhotoImage(Noiseresize)
+
+    return NoiseImageFinal

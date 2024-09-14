@@ -41,16 +41,3 @@ def apply_smoothing(kernel, weightval):
     cv2.imwrite('Smoothing.png', smoothed_image_gray)
 
     return smoothed_image_gray
-
-
-# Load the image
-
-# Save the smoothed image as PNG
-
-
-# Display the images
-# cv2.imshow('Original Image', image)
-# cv2.imshow('Smoothed Image', smoothed_image)
-# cv2.imshow('Smoothed Image (Gray)', smoothed_image_gray)
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()

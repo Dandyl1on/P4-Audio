@@ -158,12 +158,12 @@ def createbandpassframe():
     BandpassFrame = LabelFrame(FilterFrame, text="Bandpass", font="BOLD")
     BandpassFrame.pack()
 
-    BandLowSlider = Scale(BandpassFrame, from_=0, to=11025, orient=HORIZONTAL, length=200, command=lowsliderupdate)
+    BandLowSlider = Scale(BandpassFrame, from_=0, to=22050, orient=HORIZONTAL, length=200, command=lowsliderupdate)
     BandLowSlider.pack(padx=5, pady=5)
     Label2 = Label(BandpassFrame, text="Adjust low cutoff frequency")
     Label2.pack()
 
-    BandHighSlider = Scale(BandpassFrame, from_=0, to=11025, orient=HORIZONTAL, length=200, command=highsliderupdate)
+    BandHighSlider = Scale(BandpassFrame, from_=0, to=22050, orient=HORIZONTAL, length=200, command=highsliderupdate)
     BandHighSlider.pack(padx=5, pady=5)
     Label1 = Label(BandpassFrame, text="Adjust high cutoff frequency")
     Label1.pack()
@@ -388,10 +388,37 @@ def createsmoothframe():
 
         originalImage.config(image=func_for_interface.SmoothImageFinal)
 
-
-
     Applybtn = Button(Smoothingframe, text="Apply", command=getvalues)
     Applybtn.grid(row=2, column=0)
+
+def createnoiseframe():
+    EmptyLabelProcess.destroy()
+
+    Noiseframe = LabelFrame(ProcessesFrame, text="Noise", font="Bold")
+    Noiseframe.pack()
+
+    meanScale = Scale(Noiseframe, to=10, from_=0, orient=HORIZONTAL)
+    meanScale.grid(row=0, column=0)
+    MLabel = Label(Noiseframe, text="Adjust Mean")
+    MLabel.grid(row=1, column=0)
+
+    sigmaScale = Scale(Noiseframe, to=20, from_=0, orient=HORIZONTAL)
+    sigmaScale.grid(row=0, column=1)
+    SLabel = Label(Noiseframe, text="Adjust Sigma")
+    SLabel.grid(row=1, column=1)
+
+    def getvalues():
+        Meanval = meanScale.get()
+        Sigmaval = sigmaScale.get()
+
+        Noisepathchange(Meanval, Sigmaval)
+
+        originalImage.config(image=func_for_interface.NoiseImageFinal)
+
+    Applybtn = Button(Noiseframe, text="Apply", command=getvalues)
+    Applybtn.grid(row=2, column=0)
+
+
 
 def destroybandpassframe():
     global BandpassFrame
@@ -440,7 +467,7 @@ EmptyLabelProcess.pack(side=TOP)
 BtnFrameProces = Frame(ProcessesFrame, pady=5)
 BtnFrameProces.pack(side=BOTTOM)
 
-NoiseReduc = Button(BtnFrameProces, text="Noise filter")
+NoiseReduc = Button(BtnFrameProces, text="Noise filter", command=createnoiseframe)
 NoiseReduc.grid(row=0, column=0, padx=5)
 
 Sharp = Button(BtnFrameProces, text="Sharpening filter", command=createsharpframe)

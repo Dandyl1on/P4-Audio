@@ -94,7 +94,7 @@ def infoFunc():
         phase_resized = reshape_to_custom(phase, column_length)
 
         # Apply equal-loudness contour before normalization
-        magnitude = apply_equal_loudness_contour(magnitude_resized, sr, scale_factor=3.0)
+        magnitude = apply_equal_loudness_contour(magnitude_resized, sr, scale_factor=1.0)
 
         # Normalize magnitude to a logarithmic scale and then to [0, 1]
         magnitude_db = 20 * np.log10(np.maximum(magnitude, 1e-10))
@@ -127,7 +127,7 @@ def infoFunc():
         magnitude = 10 ** (magnitude_db / 20)  # Convert dB  back to amplitude
 
         # Apply the inverse equal-loudness contour
-        magnitude = apply_inverse_equal_loudness_contour(magnitude, sr, scale_factor=3.0)
+        magnitude = apply_inverse_equal_loudness_contour(magnitude, sr, scale_factor=1.0)
 
         # Denormalize phase
         phase = phase_normalized * (2 * np.pi) - np.pi

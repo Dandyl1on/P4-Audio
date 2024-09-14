@@ -1,8 +1,10 @@
 import cv2
 import numpy as np
 
+mean = 0
+sigma = 0
 
-def add_gaussian_noise(image, mean=15, sigma=25):
+def add_gaussian_noise(mean, sigma):
     """
     Add Gaussian noise to the top half of an image and make it grayscale.
 
@@ -11,6 +13,7 @@ def add_gaussian_noise(image, mean=15, sigma=25):
     :param sigma: Standard deviation of the Gaussian noise
     :return: Noisy image
     """
+    image = cv2.imread('combined_image.png')
     # Convert image to float32
     image = image.astype(np.float32)
 
@@ -28,31 +31,30 @@ def add_gaussian_noise(image, mean=15, sigma=25):
 
     # Clip the pixel values to stay within the valid range [0, 255]
     noisy_image = np.clip(noisy_image, 0, 255)
+    noisy_image = cv2.cvtColor(noisy_image, cv2.COLOR_RGB2GRAY)
 
     # Convert image back to uint8
-    return noisy_image.astype(np.uint8)
 
+    cv2.imwrite('Noise.png', noisy_image)
 
-# Load the image
-image_path = 'combined_image.png'
-image = cv2.imread(image_path, cv2.IMREAD_COLOR)
+    return noisy_image
 
-# Ensure the image is in RGB format
-image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-# Add Gaussian noise to the top half
-noisy_image = add_gaussian_noise(image)
-
-# Convert noisy image to grayscale
-noisy_image_gray = cv2.cvtColor(noisy_image, cv2.COLOR_RGB2GRAY)
-
-# Save the noisy image as PNG
-cv2.imwrite('noisy_image.png', cv2.cvtColor(noisy_image, cv2.COLOR_RGB2BGR))
-cv2.imwrite('noisy_image_gray.png', noisy_image_gray)
-
-# Display the images
-cv2.imshow('Original Image', image)
-cv2.imshow('Noisy Image', noisy_image)
-cv2.imshow('Noisy Image (Gray)', noisy_image_gray)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# # Ensure the image is in RGB format
+# image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+#
+# # Add Gaussian noise to the top half
+# noisy_image = add_gaussian_noise(image)
+#
+# # Convert noisy image to grayscale
+#
+#
+# # Save the noisy image as PNG
+# cv2.imwrite('noisy_image.png', cv2.cvtColor(noisy_image, cv2.COLOR_RGB2BGR))
+#
+#
+# # Display the images
+# cv2.imshow('Original Image', image)
+# cv2.imshow('Noisy Image', noisy_image)
+# cv2.imshow('Noisy Image (Gray)', noisy_image_gray)
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
