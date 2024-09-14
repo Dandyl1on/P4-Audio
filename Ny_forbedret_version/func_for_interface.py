@@ -31,17 +31,23 @@ def displayimage():
     global Start
     global StartImage
     global Displayed
+    global CV2Image3
+    global width
 
     CV2Image = cv2.imread("combined_image.png", cv2.IMREAD_UNCHANGED)
     if CV2Image.dtype == np.uint16:
         CV2Image = (CV2Image / 256).astype('uint8')
-    CV2Image = cv2.cvtColor(CV2Image, cv2.COLOR_BGR2RGB)
-    CV2Image = PIL.Image.fromarray(CV2Image)
-    Displayed = ImageTk.PhotoImage(CV2Image)
-    Resize = CV2Image.resize((300, 300), PIL.Image.LANCZOS)
+    CV2Image2 = cv2.cvtColor(CV2Image, cv2.COLOR_BGR2RGB)
+    CV2Image3 = PIL.Image.fromarray(CV2Image2)
+    height, width = CV2Image.shape[:2]
+
+    Displayedresize = CV2Image3.resize((400,400), PIL.Image.LANCZOS)
+    Displayed = ImageTk.PhotoImage(Displayedresize)
+
+    Resize = CV2Image3.resize((300, 300), PIL.Image.LANCZOS)
     LoadImage = ImageTk.PhotoImage(Resize)
 
-    return LoadImage, Displayed
+    return LoadImage, Displayed, width
 
 # def PlacingNumbers():
 #     global NumberPlacement
@@ -161,7 +167,22 @@ def fullimage(root):
     NewImage = Label(LargeImage, image=Full)
     NewImage.pack(pady=10, padx=10)
 
-def Sharppathchange():
+def Sharppathchange(Kernelval, Sigmaval, Aplhaval, Betaval, Gammaval):
+    global SharpImageFinal
+
     sharpfunction.image = CV2Image
-    sharpfunction()
+
+    sharpfunction(Kernelval, Sigmaval, Aplhaval, Betaval, Gammaval)
+
+    SharpImage = cv2.imread("Sharpening.png", cv2.IMREAD_UNCHANGED)
+    if SharpImage.dtype == np.uint16:
+        SharpImage = (CV2Image / 256).astype('uint8')
+    SharpImage = cv2.cvtColor(SharpImage, cv2.COLOR_BGR2RGB)
+    SharpImage = PIL.Image.fromarray(SharpImage)
+
+    Sharpresize = SharpImage.resize((400, 400), PIL.Image.LANCZOS)
+
+    SharpImageFinal = ImageTk.PhotoImage(Sharpresize)
+
+    return SharpImageFinal
 

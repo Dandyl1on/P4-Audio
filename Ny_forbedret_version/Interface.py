@@ -22,6 +22,9 @@ from all_filters import ApplyFilters
 import Equalization
 from Equalization import *
 
+import sharpening_filter
+from sharpening_filter import *
+
 from PIL.ImageFilter import Kernel
 from scipy.io import wavfile
 from PIL import Image, ImageTk
@@ -45,11 +48,12 @@ def getroot():
 # File is the original sound file chosen by the user
 File = None
 
-# Garbage collection will be referenced multiple times below. It is pythons was to improve memory and reduce items that are not used, it mainly happens to tkinters PhotoImage
+# Garbage collection will be referenced multiple times below. It is pythons way to improve memory and reduce items that are not used, it mainly happens to tkinters PhotoImage
 # None types for Image displaying to not be garbage collected
 PlaceImage = None
 SImage = None
 SmallImageLoad = None
+SharpImageFinal = None
 
 BandpassImageDisplay = None
 NotchImageDisplay = None
@@ -118,7 +122,6 @@ def selectimage():
     BandBtn.config(state=NORMAL)
     NotchBtn.config(state=NORMAL)
     EqualBtn.config(state=NORMAL)
-    SaveImage.config(state=NORMAL)
     UniPlay.config(state=NORMAL)
 
 
@@ -315,17 +318,19 @@ def createequalizationframe():
         destroynotchframe()
 
 def createsharpframe():
+    global SharpImageFinal
+
     EmptyLabelProcess.destroy()
 
     SharpeningFrame = LabelFrame(ProcessesFrame, text="Sharpening", font="Bold")
     SharpeningFrame.pack()
 
-    KernelScale = Scale(SharpeningFrame, to=10, from_=1, orient=HORIZONTAL)
+    KernelScale = Scale(SharpeningFrame, to=func_for_interface.width, from_=1, orient=HORIZONTAL)
     KernelScale.grid(row=0, column=0)
-    KLabel = Label(SharpeningFrame, text="Adjust Kenel")
+    KLabel = Label(SharpeningFrame, text="Adjust Kernel")
     KLabel.grid(row=1, column=0)
 
-    SigmaScale = Scale(SharpeningFrame, to=10, from_=0, orient=HORIZONTAL)
+    SigmaScale = Scale(SharpeningFrame, to=20, from_=0, orient=HORIZONTAL)
     SigmaScale.grid(row=2, column=0)
     SLabel = Label(SharpeningFrame, text="Adjust Sigma")
     SLabel.grid(row=3, column=0)
@@ -340,16 +345,22 @@ def createsharpframe():
     BLabel = Label(SharpeningFrame, text="Adjust Beta")
     BLabel.grid(row=3, column=1)
 
-    GammaScale = Scale(SharpeningFrame, to=5, from_=-5, orient=HORIZONTAL)
+    GammaScale = Scale(SharpeningFrame, to=10, from_=0, orient=HORIZONTAL)
     GammaScale.grid(row=4, column=1)
     GLabel = Label(SharpeningFrame, text="Adjust Gamma")
     GLabel.grid(row=5, column=1)
 
     def getvalues():
-        Sharppathchange()
 
-        originalImage.config(image="Sharpening.png")
+        Kernelval = KernelScale.get()
+        Sigmaval = SigmaScale.get()
+        Aplhaval = AlphaScale.get()
+        Betaval = BetaScale.get()
+        Gammaval = GammaScale.get()
 
+        Sharppathchange(Kernelval, Sigmaval, Aplhaval, Betaval, Gammaval)
+
+        originalImage.config(image=func_for_interface.SharpImageFinal)
 
     Applybtn = Button(SharpeningFrame, text="Apply", command=getvalues)
     Applybtn.grid(row=4, column=0)
@@ -371,26 +382,6 @@ def destroyequalframe():
     if EqualFrame is not None:
         EqualFrame.destroy()
         EqualFrame = None
-
-def saveimage():
-    global SImage
-    global SmallImageLoad
-    global File
-    global Placement
-
-    SImage = Label(scrollframe)
-    SImage.grid(row=Placement, column=0, padx=0)
-
-    text = Label(scrollframe, text=File, padx=0, pady=5, width=25)
-    text.grid(row=Placement, column=1)
-
-    Size = func_for_interface.CV2Image.resize((50, 50), PIL.Image.LANCZOS)
-    SmallImageLoad = ImageTk.PhotoImage(Size)
-
-    photo_image_references.append(SmallImageLoad)
-
-    SImage.config(image=SmallImageLoad)
-    Placement += 1
 
 
 # Creates a menu in the interface, where the select function is called
@@ -472,36 +463,9 @@ PlayImage.grid(row=0, column=0)
 PlayImage.config(state=DISABLED)
 
 
-SaveImage = Button(BtnFrame, text="Save Image", padx=5, pady=5, command=saveimage)
-SaveImage.grid(row=0, column=1)
-SaveImage.config(state=DISABLED)
-
 FullImage = Button(BtnFrame, text="Show full image", pady=5, padx=5, command=getroot)
 FullImage.grid(row=0, column=2)
 FullImage.config(state=DISABLED)
-
-# Small Images
-SmallImages = LabelFrame(InstancesFrame, text="Instances")
-SmallImages.grid(row=2, column=4)
-
-canvas = Canvas(SmallImages, height=70, width=260)
-canvas.grid(row=0, column=0, sticky="nsew")
-
-scroll = Scrollbar(SmallImages, command=canvas.yview)
-scroll.grid(row=0, column=1, sticky="ns")
-
-scrollframe = Frame(canvas, pady=5, padx=0)
-
-canvas.create_window((0, 0), window=scrollframe, anchor="nw")
-canvas.configure(yscrollcommand=scroll.set)
-
-def on_frame_configure(event):
-    canvas.configure(scrollregion=canvas.bbox("all"))
-
-scrollframe.bind("<Configure>", on_frame_configure)
-
-SmallImages.grid_rowconfigure(0, weight=1)
-SmallImages.grid_columnconfigure(0, weight=1)
 
 # Middle display frame
 FilteredImage = LabelFrame(Overframe, text="Image with choosen filter applied", width=600, height=500)
