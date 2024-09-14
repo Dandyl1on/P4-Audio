@@ -18,6 +18,9 @@ from Equalloudness_transformation import *
 import Equalization
 from Equalization import *
 
+import sharpening_filter
+from sharpening_filter import *
+
 NumberPlacement = 0
 
 def displayimage():
@@ -157,4 +160,8 @@ def fullimage(root):
     Full = ImageTk.PhotoImage(CV2Image)
     NewImage = Label(LargeImage, image=Full)
     NewImage.pack(pady=10, padx=10)
+
+def Sharppathchange():
+    sharpfunction.image = CV2Image
+    sharpfunction()
 

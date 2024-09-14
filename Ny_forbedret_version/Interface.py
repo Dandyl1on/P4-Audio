@@ -314,6 +314,46 @@ def createequalizationframe():
         destroybandpassframe()
         destroynotchframe()
 
+def createsharpframe():
+    EmptyLabelProcess.destroy()
+
+    SharpeningFrame = LabelFrame(ProcessesFrame, text="Sharpening", font="Bold")
+    SharpeningFrame.pack()
+
+    KernelScale = Scale(SharpeningFrame, to=10, from_=1, orient=HORIZONTAL)
+    KernelScale.grid(row=0, column=0)
+    KLabel = Label(SharpeningFrame, text="Adjust Kenel")
+    KLabel.grid(row=1, column=0)
+
+    SigmaScale = Scale(SharpeningFrame, to=10, from_=0, orient=HORIZONTAL)
+    SigmaScale.grid(row=2, column=0)
+    SLabel = Label(SharpeningFrame, text="Adjust Sigma")
+    SLabel.grid(row=3, column=0)
+
+    AlphaScale = Scale(SharpeningFrame, to=10, from_=0, orient=HORIZONTAL)
+    AlphaScale.grid(row=0, column=1)
+    ALabel = Label(SharpeningFrame, text="Adjust Alpha")
+    ALabel.grid(row=1, column=1)
+
+    BetaScale = Scale(SharpeningFrame, to=5, from_=-5, orient=HORIZONTAL, resolution=0.1)
+    BetaScale.grid(row=2, column=1)
+    BLabel = Label(SharpeningFrame, text="Adjust Beta")
+    BLabel.grid(row=3, column=1)
+
+    GammaScale = Scale(SharpeningFrame, to=5, from_=-5, orient=HORIZONTAL)
+    GammaScale.grid(row=4, column=1)
+    GLabel = Label(SharpeningFrame, text="Adjust Gamma")
+    GLabel.grid(row=5, column=1)
+
+    def getvalues():
+        Sharppathchange()
+
+        originalImage.config(image="Sharpening.png")
+
+
+    Applybtn = Button(SharpeningFrame, text="Apply", command=getvalues)
+    Applybtn.grid(row=4, column=0)
+
 def destroybandpassframe():
     global BandpassFrame
     if BandpassFrame is not None:
@@ -365,26 +405,26 @@ Overframe.pack(fill="both", expand=True)
 
 # Empty used for layout mangement
 EmptyLabel1 = Label(Overframe, width=20, height=2, background="grey35")
-EmptyLabel1.grid(row=0, column=4)
-EmptyLabel2 = Label(Overframe, width=3, height=2, background="grey35")
-EmptyLabel2.grid(row=0, column=0)
+EmptyLabel1.grid(row=1, column=4)
+# EmptyLabel2 = Label(Overframe, width=3, height=2, background="grey35")
+# EmptyLabel2.grid(row=0, column=0)
 EmptyLabel3 = Label(Overframe, width=20, height=2, background="grey35")
-EmptyLabel3.grid(row=0, column=2)
+EmptyLabel3.grid(row=1, column=2)
 
 # Image procsses frame
-Processes = LabelFrame(Overframe, text="Choose Image proccessing filter", pady=5, padx=5)
-Processes.grid(row=2, column=1)
+ProcessesFrame = LabelFrame(Overframe, text="Choose Image proccessing filter", pady=5, padx=5)
+ProcessesFrame.grid(row=2, column=1)
 
-EmptyLabelProcess = Label(Processes, text="", width=31, height=10)
+EmptyLabelProcess = Label(ProcessesFrame, text="", width=31, height=10)
 EmptyLabelProcess.pack(side=TOP)
 
-BtnFrameProces = Frame(Processes, pady=5)
+BtnFrameProces = Frame(ProcessesFrame, pady=5)
 BtnFrameProces.pack(side=BOTTOM)
 
 NoiseReduc = Button(BtnFrameProces, text="Noise reduction filter")
 NoiseReduc.grid(row=0, column=0, padx=5)
 
-Sharp = Button(BtnFrameProces, text="Sharpening filter")
+Sharp = Button(BtnFrameProces, text="Sharpening filter", command=createsharpframe)
 Sharp.grid(row=0, column=1, padx=5)
 
 Smooth = Button(BtnFrameProces, text="Smoothing filter")
