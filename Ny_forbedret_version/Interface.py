@@ -364,8 +364,34 @@ def createsharpframe():
     Applybtn = Button(SharpeningFrame, text="Apply", command=getvalues)
     Applybtn.grid(row=4, column=0)
 
-# def createsmoothframe():
+def createsmoothframe():
+    EmptyLabelProcess.destroy()
 
+    Smoothingframe = LabelFrame(ProcessesFrame, text="Smoothing", font="Bold")
+    Smoothingframe.pack()
+
+    kernelScale = Scale(Smoothingframe, to=func_for_interface.width, from_=0, orient=HORIZONTAL)
+    kernelScale.grid(row=0, column=0)
+    Klabel = Label(Smoothingframe, text="Adjust kernel")
+    Klabel.grid(row=1, column=0)
+
+    weightScale = Scale(Smoothingframe, to=5, from_=0, orient=HORIZONTAL, resolution=0.1)
+    weightScale.grid(row=0, column=1)
+    Wlabel = Label(Smoothingframe, text="Adjust weight")
+    Wlabel.grid(row=1, column=1)
+
+    def getvalues():
+        Kernelval = kernelScale.get()
+        Weightval = weightScale.get()
+
+        Smoothpathchange(Kernelval, Weightval)
+
+        originalImage.config(image=func_for_interface.SmoothImageFinal)
+
+
+
+    Applybtn = Button(Smoothingframe, text="Apply", command=getvalues)
+    Applybtn.grid(row=2, column=0)
 
 def destroybandpassframe():
     global BandpassFrame
@@ -420,7 +446,7 @@ NoiseReduc.grid(row=0, column=0, padx=5)
 Sharp = Button(BtnFrameProces, text="Sharpening filter", command=createsharpframe)
 Sharp.grid(row=0, column=1, padx=5)
 
-Smooth = Button(BtnFrameProces, text="Smoothing filter")
+Smooth = Button(BtnFrameProces, text="Smoothing filter", command=createsmoothframe)
 Smooth.grid(row=0, column=2, padx=5)
 
 # Filter frame

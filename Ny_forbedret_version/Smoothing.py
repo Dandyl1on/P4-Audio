@@ -1,8 +1,10 @@
 import cv2
 import numpy as np
 
+kernel = 0
+weightval = 0
 
-def apply_smoothing(image, kernel_size=(3, 3), weight=0.5):
+def apply_smoothing(kernel, weightval):
     """
     Apply smoothing to the top half of an image with adjustable intensity.
 
@@ -11,6 +13,7 @@ def apply_smoothing(image, kernel_size=(3, 3), weight=0.5):
     :param weight: Weight for blending the smoothed image
     :return: Smoothed image
     """
+    image = cv2.imread('combined_image.png')
     # Convert image to float32
     image = image.astype(np.float32)
 
@@ -24,37 +27,30 @@ def apply_smoothing(image, kernel_size=(3, 3), weight=0.5):
     top_half = image[:height // 2]
 
     # Apply Gaussian blur to the top half
-    smoothed_top_half = cv2.GaussianBlur(top_half, kernel_size, 0)
+    smoothed_top_half = cv2.GaussianBlur(top_half, (kernel, 1), 0)
 
     # Blend the smoothed top half with the original top half
-    smoothed_top_half = cv2.addWeighted(top_half, 1 - weight, smoothed_top_half, weight, 0)
+    smoothed_top_half = cv2.addWeighted(top_half, 1 - weightval, smoothed_top_half, weightval, 0)
 
     # Place the smoothed top half back into the image
     smoothed_image[:height // 2] = smoothed_top_half
 
-    return smoothed_image.astype(np.uint8)
+    # Convert smoothed image to grayscale
+    smoothed_image_gray = cv2.cvtColor(smoothed_image, cv2.COLOR_RGB2GRAY)
+
+    cv2.imwrite('Smoothing.png', smoothed_image_gray)
+
+    return smoothed_image_gray
 
 
 # Load the image
-image_path = 'combined_image.png'
-image = cv2.imread(image_path, cv2.IMREAD_COLOR)
-
-# Ensure the image is in RGB format
-image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-# Apply smoothing to the top half with adjusted intensity
-smoothed_image = apply_smoothing(image, kernel_size=(15, 15), weight=0.4)
-
-# Convert smoothed image to grayscale
-smoothed_image_gray = cv2.cvtColor(smoothed_image, cv2.COLOR_RGB2GRAY)
 
 # Save the smoothed image as PNG
-cv2.imwrite('smoothed_image.png', cv2.cvtColor(smoothed_image, cv2.COLOR_RGB2BGR))
-cv2.imwrite('smoothed_image_gray.png', smoothed_image_gray)
+
 
 # Display the images
-cv2.imshow('Original Image', image)
-cv2.imshow('Smoothed Image', smoothed_image)
-cv2.imshow('Smoothed Image (Gray)', smoothed_image_gray)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# cv2.imshow('Original Image', image)
+# cv2.imshow('Smoothed Image', smoothed_image)
+# cv2.imshow('Smoothed Image (Gray)', smoothed_image_gray)
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()

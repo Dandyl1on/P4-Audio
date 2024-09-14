@@ -21,6 +21,9 @@ from Equalization import *
 import sharpening_filter
 from sharpening_filter import *
 
+import Smoothing
+from Smoothing import *
+
 NumberPlacement = 0
 
 def displayimage():
@@ -169,9 +172,9 @@ def fullimage(root):
 
 def Sharppathchange(Kernelval, Sigmaval, Aplhaval, Betaval, Gammaval):
     global SharpImageFinal
+    stop()
 
     sharpfunction.image = CV2Image
-
     sharpfunction(Kernelval, Sigmaval, Aplhaval, Betaval, Gammaval)
 
     SharpImage = cv2.imread("Sharpening.png", cv2.IMREAD_UNCHANGED)
@@ -180,9 +183,32 @@ def Sharppathchange(Kernelval, Sigmaval, Aplhaval, Betaval, Gammaval):
     SharpImage = cv2.cvtColor(SharpImage, cv2.COLOR_BGR2RGB)
     SharpImage = PIL.Image.fromarray(SharpImage)
 
+    Equalloudness_transformation.Path = "Sharpening.png"
+    Equalloudness_transformation.infoFunc()
+
     Sharpresize = SharpImage.resize((400, 400), PIL.Image.LANCZOS)
 
     SharpImageFinal = ImageTk.PhotoImage(Sharpresize)
 
     return SharpImageFinal
 
+def Smoothpathchange(Kernelval, Weigthval):
+    global SmoothImageFinal
+    stop()
+
+    Smoothing.image = CV2Image
+    Smoothing.apply_smoothing(Kernelval, Weigthval)
+
+    SmoothImage = cv2.imread("Smoothing.png", cv2.IMREAD_UNCHANGED)
+    if SmoothImage.dtype == np.uint16:
+        SmoothImage = (CV2Image / 256).astype('uint8')
+    SmoothImage = cv2.cvtColor(SmoothImage, cv2.COLOR_BGR2RGB)
+    SmoothImage = PIL.Image.fromarray(SmoothImage)
+
+    Equalloudness_transformation.Path = "Smoothing.png"
+    Equalloudness_transformation.infoFunc()
+
+    Smoothresize = SmoothImage.resize((400, 400), PIL.Image.LANCZOS)
+    SmoothImageFinal = ImageTk.PhotoImage(Smoothresize)
+
+    return SmoothImageFinal

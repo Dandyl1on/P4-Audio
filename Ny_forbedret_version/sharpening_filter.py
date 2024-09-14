@@ -37,7 +37,7 @@ def sharpfunction(Kernel, Sigma, Alpha, Beta, Gamma):
 
     cv2.imwrite("Sharpening.png", sharp1)
 
-    return width
+    # return width
 
 
     # cv2.imshow('sharp1', sharp1)
