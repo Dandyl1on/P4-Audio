@@ -318,7 +318,6 @@ def createequalizationframe():
         destroynotchframe()
 
 def createsharpframe():
-    global SharpImageFinal
 
     EmptyLabelProcess.destroy()
 
@@ -364,6 +363,9 @@ def createsharpframe():
 
     Applybtn = Button(SharpeningFrame, text="Apply", command=getvalues)
     Applybtn.grid(row=4, column=0)
+
+# def createsmoothframe():
+
 
 def destroybandpassframe():
     global BandpassFrame
@@ -412,7 +414,7 @@ EmptyLabelProcess.pack(side=TOP)
 BtnFrameProces = Frame(ProcessesFrame, pady=5)
 BtnFrameProces.pack(side=BOTTOM)
 
-NoiseReduc = Button(BtnFrameProces, text="Noise reduction filter")
+NoiseReduc = Button(BtnFrameProces, text="Noise filter")
 NoiseReduc.grid(row=0, column=0, padx=5)
 
 Sharp = Button(BtnFrameProces, text="Sharpening filter", command=createsharpframe)
