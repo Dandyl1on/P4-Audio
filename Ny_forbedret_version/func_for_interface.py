@@ -134,7 +134,7 @@ def equalimage(bass, mid, uppermid, high, range1, range2, range3, range4):
     global CV2Image
 
     stop()
-
+    #print(bass, mid, uppermid, high)
     Equalization.low = bass
     Equalization.mid = mid
     Equalization.upper = uppermid

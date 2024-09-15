@@ -68,6 +68,10 @@ BandpassFrame = None
 NotchFrame = None
 EqualFrame = None
 
+SharpeningFrame = None
+Smoothingframe = None
+Noiseframe = None
+
 # Creates a sound player from pygame
 pygame.mixer.init()
 
@@ -123,6 +127,16 @@ def selectimage():
     NotchBtn.config(state=NORMAL)
     EqualBtn.config(state=NORMAL)
     UniPlay.config(state=NORMAL)
+    Noise.config(state=NORMAL)
+    Sharp.config(state=NORMAL)
+    Smooth.config(state=NORMAL)
+
+    if BandpassFrame is not None:
+        BandpassFrame.destroy()
+    if NotchFrame is not None:
+        NotchFrame.destroy()
+    if EqualFrame is not None:
+        EqualFrame.destroy()
 
 
 # Play music passes the File variable to the play function inside func_for_interface
@@ -252,7 +266,7 @@ def createequalizationframe():
     BassSlider.grid(row=0, column=0)
     Label1 = Label(EqualFrame, text="Adjust low frequencies")
     Label1.grid(row=1, column=0)
-    Range1 = Scale(EqualFrame, from_=0, to=5000, orient=HORIZONTAL)
+    Range1 = Scale(EqualFrame, from_=0, to=22050, orient=HORIZONTAL)
     Range1.grid(row=0, column=1)
     Range1Label = Label(EqualFrame, text="Adjust range 1")
     Range1Label.grid(row=1, column=1)
@@ -261,7 +275,7 @@ def createequalizationframe():
     MidSlider.grid(row=2, column=0)
     Label2 = Label(EqualFrame, text="Adjust mid frequencies")
     Label2.grid(row=3, column=0)
-    Range2 = Scale(EqualFrame, from_=0, to=5000, orient=HORIZONTAL)
+    Range2 = Scale(EqualFrame, from_=0, to=22050, orient=HORIZONTAL)
     Range2.grid(row=2, column=1)
     Range2Label = Label(EqualFrame, text="Adjust range 2")
     Range2Label.grid(row=3, column=1)
@@ -270,7 +284,7 @@ def createequalizationframe():
     UppermidSlider.grid(row=4, column=0)
     Label2 = Label(EqualFrame, text="Adjust uppermid frequencies")
     Label2.grid(row=5, column=0)
-    Range3 = Scale(EqualFrame, from_=0, to=5000, orient=HORIZONTAL)
+    Range3 = Scale(EqualFrame, from_=0, to=22050, orient=HORIZONTAL)
     Range3.grid(row=4, column=1)
     Range3Label = Label(EqualFrame, text="Adjust range 3")
     Range3Label.grid(row=5, column=1)
@@ -279,7 +293,7 @@ def createequalizationframe():
     HigherSlider.grid(row=6, column=0)
     Label2 = Label(EqualFrame, text="Adjust high frequencies")
     Label2.grid(row=7, column=0)
-    Range4 = Scale(EqualFrame, from_=0, to=5000, orient=HORIZONTAL)
+    Range4 = Scale(EqualFrame, from_=0, to=22050, orient=HORIZONTAL)
     Range4.grid(row=6, column=1)
     Range3Label = Label(EqualFrame, text="Adjust range 4")
     Range3Label.grid(row=7, column=1)
@@ -289,7 +303,7 @@ def createequalizationframe():
         global BandpassImageDisplay
         global NotchImageDisplay
         global FilterLabel
-
+        #print(BassSlider.get(), MidSlider.get(),UppermidSlider.get(),HigherSlider.get())
         bass = BassSlider.get()
         mid = MidSlider.get()
         uppermid = UppermidSlider.get()
@@ -318,7 +332,7 @@ def createequalizationframe():
         destroynotchframe()
 
 def createsharpframe():
-
+    global SharpeningFrame
     EmptyLabelProcess.destroy()
 
     SharpeningFrame = LabelFrame(ProcessesFrame, text="Sharpening", font="Bold")
@@ -364,7 +378,18 @@ def createsharpframe():
     Applybtn = Button(SharpeningFrame, text="Apply", command=getvalues)
     Applybtn.grid(row=4, column=0)
 
+    Noise.config(state=NORMAL)
+    Sharp.config(state=DISABLED)
+    Smooth.config(state=NORMAL)
+
+    if Smoothingframe or Noiseframe is not None:
+        destroysmoothframe()
+        destroynoiseframe()
+
+
+
 def createsmoothframe():
+    global Smoothingframe
     EmptyLabelProcess.destroy()
 
     Smoothingframe = LabelFrame(ProcessesFrame, text="Smoothing", font="Bold")
@@ -391,7 +416,16 @@ def createsmoothframe():
     Applybtn = Button(Smoothingframe, text="Apply", command=getvalues)
     Applybtn.grid(row=2, column=0)
 
+    Noise.config(state=NORMAL)
+    Sharp.config(state=NORMAL)
+    Smooth.config(state=DISABLED)
+
+    if SharpeningFrame or Noiseframe is not None:
+        destroysharpframe()
+        destroynoiseframe()
+
 def createnoiseframe():
+    global Noiseframe
     EmptyLabelProcess.destroy()
 
     Noiseframe = LabelFrame(ProcessesFrame, text="Noise", font="Bold")
@@ -418,6 +452,14 @@ def createnoiseframe():
     Applybtn = Button(Noiseframe, text="Apply", command=getvalues)
     Applybtn.grid(row=2, column=0)
 
+    Noise.config(state=DISABLED)
+    Sharp.config(state=NORMAL)
+    Smooth.config(state=NORMAL)
+
+    if SharpeningFrame or Smoothingframe is not None:
+        destroysharpframe()
+        destroysmoothframe()
+
 
 
 def destroybandpassframe():
@@ -437,6 +479,22 @@ def destroyequalframe():
     if EqualFrame is not None:
         EqualFrame.destroy()
         EqualFrame = None
+
+def destroysharpframe():
+    global SharpeningFrame
+    if SharpeningFrame is not None:
+        SharpeningFrame.destroy()
+        SharpeningFrame = None
+def destroysmoothframe():
+    global Smoothingframe
+    if Smoothingframe is not None:
+        Smoothingframe.destroy()
+        Smoothingframe = None
+def destroynoiseframe():
+    global Noiseframe
+    if Noiseframe is not None:
+        Noiseframe.destroy()
+        Noiseframe = None
 
 
 # Creates a menu in the interface, where the select function is called
@@ -467,14 +525,17 @@ EmptyLabelProcess.pack(side=TOP)
 BtnFrameProces = Frame(ProcessesFrame, pady=5)
 BtnFrameProces.pack(side=BOTTOM)
 
-NoiseReduc = Button(BtnFrameProces, text="Noise filter", command=createnoiseframe)
-NoiseReduc.grid(row=0, column=0, padx=5)
+Noise = Button(BtnFrameProces, text="Noise filter", command=createnoiseframe)
+Noise.grid(row=0, column=0, padx=5)
+Noise.config(state=DISABLED)
 
 Sharp = Button(BtnFrameProces, text="Sharpening filter", command=createsharpframe)
 Sharp.grid(row=0, column=1, padx=5)
+Sharp.config(state=DISABLED)
 
 Smooth = Button(BtnFrameProces, text="Smoothing filter", command=createsmoothframe)
 Smooth.grid(row=0, column=2, padx=5)
+Smooth.config(state=DISABLED)
 
 # Filter frame
 FilterFrame = LabelFrame(Overframe, text="Choose filters", padx=5, pady=5)

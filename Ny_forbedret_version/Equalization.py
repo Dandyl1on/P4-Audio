@@ -16,7 +16,9 @@ range2 = 2
 range3 = 3
 range4 = 4
 
+
 def mainfunc():
+    print(low, mid, upper, high, range1, range2, range3, range4)
     def apply_equalization(image_path, eq_settings, sr, output_path):
         """
         Apply frequency-based equalization by adjusting the gain of specific frequency bands in the magnitude image.
@@ -39,14 +41,21 @@ def mainfunc():
 
         # Calculate the frequency for each row in the magnitude image
         freqs = np.linspace(0, sr / 2, half_height)
-
+        print(f"Frequencies: {freqs}")
+        print(f"Range values: {range1}, {range2}, {range3}, {range4}")
         # Apply equalization based on the specified settings
         for (low_freq, high_freq), gain_factor in eq_settings.items():
             # Identify rows corresponding to the specified frequency range
             freq_mask = (freqs >= low_freq) & (freqs <= high_freq)
-
+            print(f"Frequency mask for range {low_freq}-{high_freq}: {freq_mask}")
+            print(f"Applying gain {gain_factor} for frequencies between {low_freq} and {high_freq}")
+            print(f"Frequency mask: {freq_mask.sum()} frequencies selected")
             # Apply the gain to those frequencies
-            magnitude_img_np[freq_mask, :] *= gain_factor
+            #magnitude_img_np[freq_mask, :] *= gain_factor
+            if freq_mask.sum() > 0:
+                magnitude_img_np[freq_mask, :] *= gain_factor
+            else:
+                print(f"No frequencies selected for range {low_freq} to {high_freq}")
 
         # Convert back to uint8 while ensuring values are within the 0-255 range
         magnitude_img_np = np.clip(magnitude_img_np, 0, 255).astype(np.uint8)
@@ -63,12 +72,14 @@ def mainfunc():
     image_path = 'combined_image.png'
     output_path = 'equalized_image.png'
 
+
+
     # Define the frequency bands and corresponding gain factors
     eq_settings = {
         (0, range1): low,  # low frequencies (bass)
-        (200, 2000): mid,  # mid frequencies
-        (2000, 5000): upper,  # upper mid frequencies
-        (5000, 11025): high  # high frequencies (treble)
+        (range1+1, range2): mid,  # mid frequencies
+        (range2+1, range3): upper,  # upper mid frequencies
+        (range3+1, range4): high  # high frequencies (treble)
     }
     apply_equalization(image_path, eq_settings, sr, output_path)
 
