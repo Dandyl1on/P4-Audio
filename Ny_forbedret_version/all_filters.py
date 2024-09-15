@@ -90,7 +90,7 @@ def process_and_save_filtered_image(filter_type, cutoff_freqs, output_filename):
 
 
 # Parameters
-sr = 22050
+sr = 44100
 low_freq = 11025    # Low cutoff frequency in Hz
 high_freq = 0  # High cutoff frequency in Hz
 notch_freq = 12000  # Notch frequency in Hz

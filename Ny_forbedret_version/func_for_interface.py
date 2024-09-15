@@ -134,7 +134,7 @@ def equalimage(bass, mid, uppermid, high, range1, range2, range3, range4):
     global CV2Image
 
     stop()
-    #print(bass, mid, uppermid, high)
+
     Equalization.low = bass
     Equalization.mid = mid
     Equalization.upper = uppermid
@@ -152,6 +152,8 @@ def equalimage(bass, mid, uppermid, high, range1, range2, range3, range4):
     Equalloudness_transformation.Path = "Equal Image.png" # WHAT(´･ω･`)?
     Resize = CV2Image.resize((550, 490), PIL.Image.LANCZOS)
     FLoad = ImageTk.PhotoImage(Resize)
+
+    Equalloudness_transformation.infoFunc()
 
     return FLoad
 

@@ -303,7 +303,6 @@ def createequalizationframe():
         global BandpassImageDisplay
         global NotchImageDisplay
         global FilterLabel
-        #print(BassSlider.get(), MidSlider.get(),UppermidSlider.get(),HigherSlider.get())
         bass = BassSlider.get()
         mid = MidSlider.get()
         uppermid = UppermidSlider.get()
