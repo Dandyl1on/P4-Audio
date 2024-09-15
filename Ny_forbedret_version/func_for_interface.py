@@ -39,6 +39,7 @@ def displayimage():
     global Displayed
     global CV2Image3
     global width
+    global noresize
 
     CV2Image = cv2.imread("combined_image.png", cv2.IMREAD_UNCHANGED)
     if CV2Image.dtype == np.uint16:
@@ -47,13 +48,15 @@ def displayimage():
     CV2Image3 = PIL.Image.fromarray(CV2Image2)
     height, width = CV2Image.shape[:2]
 
+    noresize = ImageTk.PhotoImage(CV2Image3)
+    # Redundant?
     Displayedresize = CV2Image3.resize((400,400), PIL.Image.LANCZOS)
     Displayed = ImageTk.PhotoImage(Displayedresize)
 
     Resize = CV2Image3.resize((300, 300), PIL.Image.LANCZOS)
     LoadImage = ImageTk.PhotoImage(Resize)
 
-    return LoadImage, Displayed, width
+    return LoadImage, Displayed, width, noresize
 
 # def PlacingNumbers():
 #     global NumberPlacement
@@ -238,3 +241,9 @@ def Noisepathchange(Meanval, Sigmaval):
     NoiseImageFinal = ImageTk.PhotoImage(Noiseresize)
 
     return NoiseImageFinal
+
+def NoiseInformation(root):
+    print("wtf")
+    # Information = Toplevel(root)
+    # Information.title("Full Image")
+    # Information.geometry("750x680")

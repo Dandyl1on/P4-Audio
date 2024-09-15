@@ -16,7 +16,7 @@ import Equalloudness_transformation
 from Equalloudness_transformation import *
 
 import all_filters
-from PIL.ImageOps import scale
+from PIL.ImageOps import scale, expand
 from all_filters import ApplyFilters
 
 import Equalization
@@ -115,9 +115,9 @@ def selectimage():
     # This one with originalImage is for the image without any filter changes
     # ensures that the user can choose other images and display that image
     if originalImage is not None:
-        originalImage.config(image=func_for_interface.Displayed)
+        originalImage.config(image=func_for_interface.noresize)
     else:
-        originalImage = Label(FilterLabel, image=func_for_interface.Displayed)
+        originalImage = Label(FilterLabel, image=func_for_interface.noresize)
         originalImage.pack()
 
     # Returns buttons to normal state so users can press them
@@ -201,9 +201,6 @@ def createbandpassframe():
     Apply = Button(BandpassFrame, text="Apply filter", command=getHighandLow)
     Apply.pack()
 
-    # destroys the empty label that makes the size of the "choose filters" frame
-    EmptyLabelFilter.destroy()
-
     # Changes button states to be normal and disabled so the user cannot create multiple of the same frame
     BandBtn.config(state=DISABLED)
     NotchBtn.config(state=NORMAL)
@@ -250,8 +247,6 @@ def createnotchframe():
     NotchBtn.config(state=DISABLED)
     EqualBtn.config(state=NORMAL)
 
-    EmptyLabelFilter.destroy()
-
     if EqualFrame or BandpassFrame is not None:
         destroybandpassframe()
         destroyequalframe()
@@ -266,36 +261,36 @@ def createequalizationframe():
     BassSlider.grid(row=0, column=0)
     Label1 = Label(EqualFrame, text="Adjust low frequencies")
     Label1.grid(row=1, column=0)
-    Range1 = Scale(EqualFrame, from_=0, to=22050, orient=HORIZONTAL)
-    Range1.grid(row=0, column=1)
-    Range1Label = Label(EqualFrame, text="Adjust range 1")
+    Band1 = Scale(EqualFrame, from_=0, to=22050, orient=HORIZONTAL)
+    Band1.grid(row=0, column=1)
+    Range1Label = Label(EqualFrame, text="Adjust band 1")
     Range1Label.grid(row=1, column=1)
 
     MidSlider = Scale(EqualFrame, from_=0, to=2, orient=HORIZONTAL, length=200, resolution=0.1)
     MidSlider.grid(row=2, column=0)
     Label2 = Label(EqualFrame, text="Adjust mid frequencies")
     Label2.grid(row=3, column=0)
-    Range2 = Scale(EqualFrame, from_=0, to=22050, orient=HORIZONTAL)
-    Range2.grid(row=2, column=1)
-    Range2Label = Label(EqualFrame, text="Adjust range 2")
+    Band2 = Scale(EqualFrame, from_=0, to=22050, orient=HORIZONTAL)
+    Band2.grid(row=2, column=1)
+    Range2Label = Label(EqualFrame, text="Adjust band 2")
     Range2Label.grid(row=3, column=1)
 
     UppermidSlider = Scale(EqualFrame, from_=0, to=2, orient=HORIZONTAL, length=200, resolution=0.1)
     UppermidSlider.grid(row=4, column=0)
     Label2 = Label(EqualFrame, text="Adjust uppermid frequencies")
     Label2.grid(row=5, column=0)
-    Range3 = Scale(EqualFrame, from_=0, to=22050, orient=HORIZONTAL)
-    Range3.grid(row=4, column=1)
-    Range3Label = Label(EqualFrame, text="Adjust range 3")
+    Band3 = Scale(EqualFrame, from_=0, to=22050, orient=HORIZONTAL)
+    Band3.grid(row=4, column=1)
+    Range3Label = Label(EqualFrame, text="Adjust band 3")
     Range3Label.grid(row=5, column=1)
 
     HigherSlider = Scale(EqualFrame, from_=0, to=2, orient=HORIZONTAL, length=200, resolution=0.1)
     HigherSlider.grid(row=6, column=0)
     Label2 = Label(EqualFrame, text="Adjust high frequencies")
     Label2.grid(row=7, column=0)
-    Range4 = Scale(EqualFrame, from_=0, to=22050, orient=HORIZONTAL)
-    Range4.grid(row=6, column=1)
-    Range3Label = Label(EqualFrame, text="Adjust range 4")
+    Band4 = Scale(EqualFrame, from_=0, to=22050, orient=HORIZONTAL)
+    Band4.grid(row=6, column=1)
+    Range3Label = Label(EqualFrame, text="Adjust band 4")
     Range3Label.grid(row=7, column=1)
 
     def getequalizationsliders():
@@ -307,10 +302,10 @@ def createequalizationframe():
         mid = MidSlider.get()
         uppermid = UppermidSlider.get()
         high = HigherSlider.get()
-        range1 = Range1.get()
-        range2 = Range2.get()
-        range3 = Range3.get()
-        range4 = Range4.get()
+        range1 = Band1.get()
+        range2 = Band2.get()
+        range3 = Band3.get()
+        range4 = Band4.get()
         equalimage(bass, mid, uppermid, high, range1, range2, range3, range4)
 
         originalImage.config(image=func_for_interface.FLoad)
@@ -318,13 +313,10 @@ def createequalizationframe():
     Apply = Button(EqualFrame, text="Apply filter", command=getequalizationsliders)
     Apply.grid(row=4, column=2)
 
-    EmptyLabel3.config(width=10)
-
     BandBtn.config(state=NORMAL)
     NotchBtn.config(state=NORMAL)
     EqualBtn.config(state=DISABLED)
 
-    EmptyLabelFilter.destroy()
 
     if BandpassFrame or NotchFrame is not None:
         destroybandpassframe()
@@ -332,7 +324,6 @@ def createequalizationframe():
 
 def createsharpframe():
     global SharpeningFrame
-    EmptyLabelProcess.destroy()
 
     SharpeningFrame = LabelFrame(ProcessesFrame, text="Sharpening", font="Bold")
     SharpeningFrame.pack()
@@ -389,7 +380,6 @@ def createsharpframe():
 
 def createsmoothframe():
     global Smoothingframe
-    EmptyLabelProcess.destroy()
 
     Smoothingframe = LabelFrame(ProcessesFrame, text="Smoothing", font="Bold")
     Smoothingframe.pack()
@@ -425,7 +415,6 @@ def createsmoothframe():
 
 def createnoiseframe():
     global Noiseframe
-    EmptyLabelProcess.destroy()
 
     Noiseframe = LabelFrame(ProcessesFrame, text="Noise", font="Bold")
     Noiseframe.pack()
@@ -450,6 +439,8 @@ def createnoiseframe():
 
     Applybtn = Button(Noiseframe, text="Apply", command=getvalues)
     Applybtn.grid(row=2, column=0)
+    Infobtn = Button(Noiseframe, text="What(⊙_⊙)？", command=func_for_interface.NoiseInformation(root))
+    Infobtn.grid(row=2, column=1)
 
     Noise.config(state=DISABLED)
     Sharp.config(state=NORMAL)
@@ -459,26 +450,21 @@ def createnoiseframe():
         destroysharpframe()
         destroysmoothframe()
 
-
-
 def destroybandpassframe():
     global BandpassFrame
     if BandpassFrame is not None:
         BandpassFrame.destroy()
         BandpassFrame = None
-
 def destroynotchframe():
     global NotchFrame
     if NotchFrame is not None:
         NotchFrame.destroy()
         NotchFrame = None
-
 def destroyequalframe():
     global EqualFrame
     if EqualFrame is not None:
         EqualFrame.destroy()
         EqualFrame = None
-
 def destroysharpframe():
     global SharpeningFrame
     if SharpeningFrame is not None:
@@ -508,18 +494,42 @@ Overframe.pack(fill="both", expand=True)
 
 # Empty used for layout mangement
 EmptyLabel1 = Label(Overframe, width=20, height=2, background="grey35")
-EmptyLabel1.grid(row=1, column=4)
+EmptyLabel1.grid(row=0, column=4)
 # EmptyLabel2 = Label(Overframe, width=3, height=2, background="grey35")
 # EmptyLabel2.grid(row=0, column=0)
 EmptyLabel3 = Label(Overframe, width=20, height=2, background="grey35")
-EmptyLabel3.grid(row=1, column=2)
+EmptyLabel3.grid(row=0, column=2)
+
+Filters = Frame(Overframe, pady=5, padx=5, background="grey35")
+Filters.grid(row=0, column=1)
+
+# Filter frame
+FilterFrame = LabelFrame(Filters, text="Signal Processing Filters", padx=5, pady=5, font="Bold", height=350, width=450)
+FilterFrame.pack_propagate(FALSE)
+FilterFrame.pack(side=TOP)
+
+# if column 0 set empty labels to column -1
+
+BtnFrame = Frame(FilterFrame, pady=5)
+BtnFrame.pack(side=BOTTOM)
+
+BandBtn = Button(BtnFrame, text="Bandpass Filter", command=createbandpassframe)
+BandBtn.grid(row=0, column=0, padx=5)
+BandBtn.config(state=DISABLED)
+
+NotchBtn = Button(BtnFrame, text="Notch Filter", command=createnotchframe)
+NotchBtn.grid(row=0, column=1, padx=5)
+NotchBtn.config(state=DISABLED)
+
+EqualBtn = Button(BtnFrame, text="Equalization Filter", command=createequalizationframe)
+EqualBtn.grid(row=0, column=2, padx=5)
+#EqualBtn.config(state=DISABLED)
 
 # Image procsses frame
-ProcessesFrame = LabelFrame(Overframe, text="Choose Image proccessing filter", pady=5, padx=5)
-ProcessesFrame.grid(row=2, column=1)
+ProcessesFrame = LabelFrame(Filters, text="Image Proccessing Filters", pady=5, padx=5, font="Bold", height=350, width=450)
+ProcessesFrame.pack_propagate(FALSE)
+ProcessesFrame.pack(side=BOTTOM, pady=15)
 
-EmptyLabelProcess = Label(ProcessesFrame, text="", width=31, height=10)
-EmptyLabelProcess.pack(side=TOP)
 
 BtnFrameProces = Frame(ProcessesFrame, pady=5)
 BtnFrameProces.pack(side=BOTTOM)
@@ -536,39 +546,16 @@ Smooth = Button(BtnFrameProces, text="Smoothing filter", command=createsmoothfra
 Smooth.grid(row=0, column=2, padx=5)
 Smooth.config(state=DISABLED)
 
-# Filter frame
-FilterFrame = LabelFrame(Overframe, text="Choose filters", padx=5, pady=5)
-FilterFrame.grid(row=1, column=1)
-
-EmptyLabelFilter = Label(FilterFrame, text="", width=31, height=10)
-EmptyLabelFilter.pack(side=TOP)
-
-BtnFrame = Frame(FilterFrame, pady=5)
-BtnFrame.pack(side=BOTTOM)
-
-BandBtn = Button(BtnFrame, text="Bandpass Filter", command=createbandpassframe)
-BandBtn.grid(row=0, column=0, padx=5)
-BandBtn.config(state=DISABLED)
-
-NotchBtn = Button(BtnFrame, text="Notch Filter", command=createnotchframe)
-NotchBtn.grid(row=0, column=1, padx=5)
-NotchBtn.config(state=DISABLED)
-
-EqualBtn = Button(BtnFrame, text="Equalization Filter", command=createequalizationframe)
-EqualBtn.grid(row=0, column=2, padx=5)
-EqualBtn.config(state=DISABLED)
 
 # Preview frame
 DisplayFrame = LabelFrame(Overframe, text="Preview", pady=5, padx=5)
-DisplayFrame.grid(row=1, column=5)
+DisplayFrame.grid(row=0, column=5)
 
 UnderFrame = Frame(DisplayFrame)
 UnderFrame.pack()
 
 BtnFrame = Frame(UnderFrame, pady=5, padx=5)
 BtnFrame.pack(side=BOTTOM)
-InstancesFrame = Frame(DisplayFrame, pady=5, padx=5)
-InstancesFrame.pack(side=BOTTOM)
 
 ImageLabel = Label(UnderFrame, text="Your image will be displayed", width=42, height=24)
 ImageLabel.pack(side=TOP)
@@ -584,17 +571,18 @@ FullImage.config(state=DISABLED)
 
 # Middle display frame
 FilteredImage = LabelFrame(Overframe, text="Image with choosen filter applied", width=600, height=500)
-FilteredImage.grid(row=1, column=3)
+FilteredImage.grid(row=0, column=3)
 
 FilterLabel = Label(FilteredImage, text="Your image will be displayed here", width=78, height=32)
-FilterLabel.pack(side=RIGHT)
+FilterLabel.pack(side=TOP)
 
 NumberFrame = Frame(FilteredImage, height=32)
 NumberFrame.pack()
 
 # Universal frame
-UniversalFrame = Frame(Overframe, width=600, padx=5, pady=5)
-UniversalFrame.grid(row=2, column=3)
+UniversalFrame = Frame(FilteredImage, padx=5, pady=5)
+UniversalFrame.pack(side=BOTTOM)
+#UniversalFrame.grid(row=2, column=3)
 
 UniPlay = Button(UniversalFrame, text="Play Image", command=func_for_interface.playfilter)
 UniPlay.pack()
