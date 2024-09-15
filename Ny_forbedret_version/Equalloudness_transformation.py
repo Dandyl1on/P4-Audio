@@ -5,7 +5,7 @@ import soundfile as sf
 import os
 from scipy.interpolate import interp1d
 
-audio_path = "numero 1.wav"
+audio_path = "GI_GMF_B3_353_20140520_n.wav"
 Path = "combined_image.png"
 
 def infoFunc():
