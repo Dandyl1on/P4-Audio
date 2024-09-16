@@ -194,9 +194,7 @@ def Sharppathchange(Kernelval, Sigmaval, Aplhaval, Betaval, Gammaval):
     Equalloudness_transformation.Path = "Sharpening.png"
     Equalloudness_transformation.infoFunc()
 
-    Sharpresize = SharpImage.resize((400, 400), PIL.Image.LANCZOS)
-
-    SharpImageFinal = ImageTk.PhotoImage(Sharpresize)
+    SharpImageFinal = ImageTk.PhotoImage(SharpImage)
 
     return SharpImageFinal
 
@@ -216,8 +214,7 @@ def Smoothpathchange(Kernelval, Weigthval):
     Equalloudness_transformation.Path = "Smoothing.png"
     Equalloudness_transformation.infoFunc()
 
-    Smoothresize = SmoothImage.resize((400, 400), PIL.Image.LANCZOS)
-    SmoothImageFinal = ImageTk.PhotoImage(Smoothresize)
+    SmoothImageFinal = ImageTk.PhotoImage(SmoothImage)
 
     return SmoothImageFinal
 
@@ -237,12 +234,21 @@ def Noisepathchange(Meanval, Sigmaval):
     Equalloudness_transformation.Path = "Noise.png"
     Equalloudness_transformation.infoFunc()
 
-    Noiseresize = NoiseImage.resize((400, 400), PIL.Image.LANCZOS)
-    NoiseImageFinal = ImageTk.PhotoImage(Noiseresize)
+    NoiseImageFinal = ImageTk.PhotoImage(NoiseImage)
 
     return NoiseImageFinal
 
-def NoiseInformation(root):
-    Information = Toplevel(root)
-    Information.title("Full Image")
-    Information.geometry("750x680")
+def BandInformation():
+    mb.showinfo("Bandpass Information", "Adjust the low cutoff and high cutoff to keep anything inbetween those two values")
+def NotchInformation():
+    mb.showinfo("Notch Information", "Adjust the Bandwidth to remove anything inside. The notch decides where on the image the bandwidth is placed")
+def EqualizationInformation():
+    mb.showinfo("Equalization Information", "Bands cannot be higher than the previous, bands decide how much of the image is modified by the frequencies. The frequencies decide how much the selected bands are modified")
+
+
+def NoiseInformation():
+    mb.showinfo("Noise information", "Adjust the mean for the noise, and the weight for the amount")
+def SharpInformation():
+    mb.showinfo("Sharpening Information", "Adjust the kernel size and the Sigma for the gaussian blur. The alhpa, beta and gamma is for the weight ")
+def SmoothInformation():
+    mb.showinfo("SmoothingInformation", "Adjust the kernel size for gaussian blur and the weight values")

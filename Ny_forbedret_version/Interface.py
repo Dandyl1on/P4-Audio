@@ -115,9 +115,9 @@ def selectimage():
     # This one with originalImage is for the image without any filter changes
     # ensures that the user can choose other images and display that image
     if originalImage is not None:
-        originalImage.config(image=func_for_interface.noresize)
+        originalImage.config(image=func_for_interface.Displayed)
     else:
-        originalImage = Label(FilterLabel, image=func_for_interface.noresize)
+        originalImage = Label(FilterLabel, image=func_for_interface.Displayed)
         originalImage.pack()
 
     # Returns buttons to normal state so users can press them
@@ -200,6 +200,8 @@ def createbandpassframe():
     # Tkinter code for creating the buttons
     Apply = Button(BandpassFrame, text="Apply filter", command=getHighandLow)
     Apply.pack()
+    Infobtn = Button(BandpassFrame, text="Information", command=func_for_interface.BandInformation)
+    Infobtn.pack()
 
     # Changes button states to be normal and disabled so the user cannot create multiple of the same frame
     BandBtn.config(state=DISABLED)
@@ -241,6 +243,8 @@ def createnotchframe():
 
     Apply = Button(NotchFrame, text="Apply filter", command=getnotchandbandwidth)
     Apply.pack()
+    Infobtn = Button(NotchFrame, text="Information", command=func_for_interface.NotchInformation)
+    Infobtn.pack()
 
 
     BandBtn.config(state=NORMAL)
@@ -257,38 +261,38 @@ def createequalizationframe():
     EqualFrame = LabelFrame(FilterFrame, text="Equalization", font="bold")
     EqualFrame.pack()
 
-    BassSlider = Scale(EqualFrame, from_=0, to=2, orient=HORIZONTAL, length=200, resolution=0.1)
+    BassSlider = Scale(EqualFrame, from_=0, to=2, orient=HORIZONTAL, resolution=0.1)
     BassSlider.grid(row=0, column=0)
     Label1 = Label(EqualFrame, text="Adjust low frequencies")
     Label1.grid(row=1, column=0)
-    Band1 = Scale(EqualFrame, from_=0, to=22050, orient=HORIZONTAL)
+    Band1 = Scale(EqualFrame, from_=0, to=22050, length=200, orient=HORIZONTAL)
     Band1.grid(row=0, column=1)
     Range1Label = Label(EqualFrame, text="Adjust band 1")
     Range1Label.grid(row=1, column=1)
 
-    MidSlider = Scale(EqualFrame, from_=0, to=2, orient=HORIZONTAL, length=200, resolution=0.1)
+    MidSlider = Scale(EqualFrame, from_=0, to=2, orient=HORIZONTAL, resolution=0.1)
     MidSlider.grid(row=2, column=0)
     Label2 = Label(EqualFrame, text="Adjust mid frequencies")
     Label2.grid(row=3, column=0)
-    Band2 = Scale(EqualFrame, from_=0, to=22050, orient=HORIZONTAL)
+    Band2 = Scale(EqualFrame, from_=0, to=22050, length=200, orient=HORIZONTAL)
     Band2.grid(row=2, column=1)
     Range2Label = Label(EqualFrame, text="Adjust band 2")
     Range2Label.grid(row=3, column=1)
 
-    UppermidSlider = Scale(EqualFrame, from_=0, to=2, orient=HORIZONTAL, length=200, resolution=0.1)
+    UppermidSlider = Scale(EqualFrame, from_=0, to=2, orient=HORIZONTAL, resolution=0.1)
     UppermidSlider.grid(row=4, column=0)
     Label2 = Label(EqualFrame, text="Adjust uppermid frequencies")
     Label2.grid(row=5, column=0)
-    Band3 = Scale(EqualFrame, from_=0, to=22050, orient=HORIZONTAL)
+    Band3 = Scale(EqualFrame, from_=0, to=22050, length=200, orient=HORIZONTAL)
     Band3.grid(row=4, column=1)
     Range3Label = Label(EqualFrame, text="Adjust band 3")
     Range3Label.grid(row=5, column=1)
 
-    HigherSlider = Scale(EqualFrame, from_=0, to=2, orient=HORIZONTAL, length=200, resolution=0.1)
+    HigherSlider = Scale(EqualFrame, from_=0, to=2, orient=HORIZONTAL, resolution=0.1)
     HigherSlider.grid(row=6, column=0)
     Label2 = Label(EqualFrame, text="Adjust high frequencies")
     Label2.grid(row=7, column=0)
-    Band4 = Scale(EqualFrame, from_=0, to=22050, orient=HORIZONTAL)
+    Band4 = Scale(EqualFrame, from_=0, to=22050, length=200, orient=HORIZONTAL)
     Band4.grid(row=6, column=1)
     Range3Label = Label(EqualFrame, text="Adjust band 4")
     Range3Label.grid(row=7, column=1)
@@ -311,7 +315,9 @@ def createequalizationframe():
         originalImage.config(image=func_for_interface.FLoad)
 
     Apply = Button(EqualFrame, text="Apply filter", command=getequalizationsliders)
-    Apply.grid(row=4, column=2)
+    Apply.grid(row=3, column=2)
+    Infobtn = Button(EqualFrame, text="Information", command=func_for_interface.EqualizationInformation)
+    Infobtn.grid(row=4, column=2)
 
     BandBtn.config(state=NORMAL)
     NotchBtn.config(state=NORMAL)
@@ -367,6 +373,8 @@ def createsharpframe():
 
     Applybtn = Button(SharpeningFrame, text="Apply", command=getvalues)
     Applybtn.grid(row=4, column=0)
+    Infobtn = Button(SharpeningFrame, text="Information", command=func_for_interface.SharpInformation)
+    Infobtn.grid(row=5, column=0)
 
     Noise.config(state=NORMAL)
     Sharp.config(state=DISABLED)
@@ -404,6 +412,8 @@ def createsmoothframe():
 
     Applybtn = Button(Smoothingframe, text="Apply", command=getvalues)
     Applybtn.grid(row=2, column=0)
+    Infobtn = Button(Smoothingframe, text="Information", command=func_for_interface.SmoothInformation)
+    Infobtn.grid(row=2, column=1)
 
     Noise.config(state=NORMAL)
     Sharp.config(state=NORMAL)
@@ -439,7 +449,7 @@ def createnoiseframe():
 
     Applybtn = Button(Noiseframe, text="Apply", command=getvalues)
     Applybtn.grid(row=2, column=0)
-    Infobtn = Button(Noiseframe, text="Information", command=lambda: func_for_interface.NoiseInformation(root))
+    Infobtn = Button(Noiseframe, text="Information", command=func_for_interface.NoiseInformation)
     Infobtn.grid(row=2, column=1)
 
     Noise.config(state=DISABLED)
