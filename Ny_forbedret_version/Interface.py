@@ -439,7 +439,7 @@ def createnoiseframe():
 
     Applybtn = Button(Noiseframe, text="Apply", command=getvalues)
     Applybtn.grid(row=2, column=0)
-    Infobtn = Button(Noiseframe, text="What(⊙_⊙)？", command=func_for_interface.NoiseInformation(root))
+    Infobtn = Button(Noiseframe, text="Information", command=lambda: func_for_interface.NoiseInformation(root))
     Infobtn.grid(row=2, column=1)
 
     Noise.config(state=DISABLED)
