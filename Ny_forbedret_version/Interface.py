@@ -493,11 +493,11 @@ Overframe = Frame(root, background="grey35")
 Overframe.pack(fill="both", expand=True)
 
 # Empty used for layout mangement
-EmptyLabel1 = Label(Overframe, width=20, height=2, background="grey35")
+EmptyLabel1 = Label(Overframe, width=10, height=2, background="grey35")
 EmptyLabel1.grid(row=0, column=4)
 # EmptyLabel2 = Label(Overframe, width=3, height=2, background="grey35")
 # EmptyLabel2.grid(row=0, column=0)
-EmptyLabel3 = Label(Overframe, width=20, height=2, background="grey35")
+EmptyLabel3 = Label(Overframe, width=10, height=2, background="grey35")
 EmptyLabel3.grid(row=0, column=2)
 
 Filters = Frame(Overframe, pady=5, padx=5, background="grey35")
@@ -523,7 +523,7 @@ NotchBtn.config(state=DISABLED)
 
 EqualBtn = Button(BtnFrame, text="Equalization Filter", command=createequalizationframe)
 EqualBtn.grid(row=0, column=2, padx=5)
-#EqualBtn.config(state=DISABLED)
+EqualBtn.config(state=DISABLED)
 
 # Image procsses frame
 ProcessesFrame = LabelFrame(Filters, text="Image Proccessing Filters", pady=5, padx=5, font="Bold", height=350, width=450)
@@ -574,6 +574,7 @@ FilteredImage = LabelFrame(Overframe, text="Image with choosen filter applied", 
 FilteredImage.grid(row=0, column=3)
 
 FilterLabel = Label(FilteredImage, text="Your image will be displayed here", width=78, height=32)
+FilterLabel.pack_propagate(FALSE)
 FilterLabel.pack(side=TOP)
 
 NumberFrame = Frame(FilteredImage, height=32)
@@ -582,7 +583,7 @@ NumberFrame.pack()
 # Universal frame
 UniversalFrame = Frame(FilteredImage, padx=5, pady=5)
 UniversalFrame.pack(side=BOTTOM)
-#UniversalFrame.grid(row=2, column=3)
+
 
 UniPlay = Button(UniversalFrame, text="Play Image", command=func_for_interface.playfilter)
 UniPlay.pack()

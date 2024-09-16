@@ -244,6 +244,6 @@ def Noisepathchange(Meanval, Sigmaval):
 
 def NoiseInformation(root):
     print("wtf")
-    # Information = Toplevel(root)
-    # Information.title("Full Image")
-    # Information.geometry("750x680")
+    Information = Toplevel(root)
+    Information.title("Full Image")
+    Information.geometry("750x680")
