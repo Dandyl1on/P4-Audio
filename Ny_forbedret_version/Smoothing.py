@@ -5,6 +5,8 @@ kernel = 0
 weightval = 0
 
 def apply_smoothing(kernel, weightval):
+    if kernel % 2 == 0:
+        kernel += 1
     """
     Apply smoothing to the top half of an image with adjustable intensity.
 
