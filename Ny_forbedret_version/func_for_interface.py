@@ -239,15 +239,15 @@ def Noisepathchange(Meanval, Sigmaval):
     return NoiseImageFinal
 
 def BandInformation():
-    mb.showinfo("Bandpass Information", "Adjust the low cutoff and high cutoff to keep anything inbetween those two values")
+    mb.showinfo("Bandpass Information", "Adjust the low cut and high cut frequencies to pass only the values in between the values. \n\nHigh cut: Determines the high cutoff frequency every frequency higher than this value is not passed through. \n\nLow cut: Determines the low cutoff frequency every frequency lower than this value is not passed through. ")
 def NotchInformation():
-    mb.showinfo("Notch Information", "Adjust the Bandwidth to remove anything inside. The notch decides where on the image the bandwidth is placed")
+    mb.showinfo("Notch Information", "Adjust the frequency to determine the midpoint of the bandwidth. \n\nAdjust the bandwidth to determine the range of which the filter blocks frequencies. ")
 def EqualizationInformation():
-    mb.showinfo("Equalization Information", "Bands cannot be higher than the previous, bands decide how much of the image is modified by the frequencies. The frequencies decide how much the selected bands are modified")
+    mb.showinfo("Equalization Information", "Adjust the frequency bands to choose the frequency range of the 4 bands. (Note that the bands cannot overlap with one another). \n\nAdjust the equalization weight to determine the amount of increase/decrease you want. ")
 
 
 def NoiseInformation():
-    mb.showinfo("Noise information", "Adjust the mean for the noise, and the weight for the amount")
+    mb.showinfo("Noise information", "Adjust the mean to determine the average value of the noise added to the image. \n\nAdjust the sigma to determine the deviation of which the amount applied can vary.")
 def SharpInformation():
     mb.showinfo("Sharpening Information", "Adjust the kernel size and the Sigma for the gaussian blur. The alhpa, beta and gamma is for the weight ")
 def SmoothInformation():
