@@ -349,7 +349,7 @@ def createsharpframe():
     ALabel = Label(SharpeningFrame, text="Adjust Alpha")
     ALabel.grid(row=1, column=1)
 
-    BetaScale = Scale(SharpeningFrame, to=0, from_=-5, orient=HORIZONTAL, resolution=0.1)
+    BetaScale = Scale(SharpeningFrame, to=-5, from_=0, orient=HORIZONTAL, resolution=0.1)
     BetaScale.grid(row=2, column=1)
     BLabel = Label(SharpeningFrame, text="Adjust Beta")
     BLabel.grid(row=3, column=1)

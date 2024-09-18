@@ -250,9 +250,9 @@ def NoiseInformation():
     mb.showinfo("Noise information", "Adjust the mean to determine the average value of the noise added to the image. \n\nAdjust the sigma to determine the deviation of which the amount applied can vary.")
 def SharpInformation():
     mb.showinfo("Sharpening Information", "Adjust the kernel size to choose how big the affected area for each modification should be.\n\n"
-                                          "Alpha: Adjust the alpha to determine the weight of much of the original image is preserved in the final sharpening result. (A higher weight results in a more significant and sharper modification.\n"
-                                          "Beta: Adjusts the amount of blur that is subtracted. (This can only be negative) \n"
-                                          "Gamma: Adjusts a value which is added to each pixel after the sharpness is applied. (This is used to brighten the image.) \n"
+                                          "Alpha: Adjust the alpha to determine the weight of much of the original image is preserved in the final sharpening result. (A higher weight results in a more significant and sharper modification.\n\n"
+                                          "Beta: Adjusts the amount of blur that is subtracted. (This can only be negative) \n\n"
+                                          "Gamma: Adjusts a value which is added to each pixel after the sharpness is applied. (This is used to brighten the image.)\n\n"
                                           "Sigma: Adjusts the amount of blur applied to the the image. (A higher value results in a blurrier image.)")
 def SmoothInformation():
     mb.showinfo("SmoothingInformation", "Adjust the kernel to choose the affected area.\n"
